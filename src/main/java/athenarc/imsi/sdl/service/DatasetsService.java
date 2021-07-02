@@ -43,20 +43,17 @@ public class DatasetsService {
         for(String dir : datasetDirs) {
             String schemaFile = Constants.DATA_DIR + dir + "/schema.json";
             // System.out.println(FileUtil.readSchema(schemaFile));
-            Document schema = Document.parse(FileUtil.readJsonFile(schemaFile));
-            schema.append("folder", dir);
-            response.append(schema.get("name").toString(), schema);
-            schema.remove("name");
+            response.append(dir, Document.parse(FileUtil.readJsonFile(schemaFile)));
         }
         return response;
     }
 
-    public List<Document> autocomplete(String folder, String entity, String field, String term, Boolean uniqueValues) throws IOException {
+    public List<Document> autocomplete(String dataset, String entity, String field, String term, Boolean uniqueValues) throws IOException {
         List<Document> docs = new ArrayList<>();
         Set<String> values = new HashSet<>();
 
         BufferedReader reader;
-        String filename = Constants.DATA_DIR + folder + "/nodes/" + entity + ".csv";
+        String filename = Constants.DATA_DIR + dataset + "/nodes/" + entity + ".csv";
         reader = new BufferedReader(new FileReader(filename));
 
         // read header line and find column of specified field

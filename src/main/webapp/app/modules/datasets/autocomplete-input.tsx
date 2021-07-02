@@ -14,7 +14,7 @@ export interface IAutocompleteInputProps extends StateProps, DispatchProps {
 
     entity: string,
     field: string,
-    folder: string,
+    dataset: string,
     size?: string,
     value?: string,
 
@@ -117,7 +117,7 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
             params: {
                 entity: this.props.entity,
                 field: this.props.field,
-                folder: this.props.folder,
+                dataset: this.props.dataset,
                 term: query,
                 uniqueValues: this.props.uniqueValues,
             }
@@ -179,6 +179,7 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
     }
 
     render() {
+        console.warn(this.props.dataset);
         const asyncTypeaheadJsx=<AsyncTypeahead
             allowNew={false}
             isLoading={this.state.isLoading}
