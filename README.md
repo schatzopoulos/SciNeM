@@ -4,7 +4,19 @@
   <br />
 </p>
 
-This application was generated using JHipster 6.5.1, you can find documentation and help at [https://www.jhipster.tech/documentation-archive/v6.5.1](https://www.jhipster.tech/documentation-archive/v6.5.1).
+SciNeM is an open-source tool that offers a wide range of functionalities for exploring and analysing HINs and utilises Apache Spark for scaling out through parallel
+and distributed computation. SciNeM provides an intuitive, Web-based user interface to build and execute complex constrained metapath-based queries and to explore and visualise the corresponding results. Under the hood, all the supported state-ofthe-art HIN analysis types have been implemented in a scalable manner supporting the distributed execution of analysis tasks on computational clusters. SciNeM has a modular architecture making it easy to extend it with additional algorithms and functionalities. Currently, it supports the following operations, given a user-specified metapath: ranking entities using a random walk model, retrieving the top-𝑘 most similar pairs of entities, finding the most similar entities to a query entity, and discovering entity communities.
+
+## How to cite
+```
+@inproceedings{chatzopoulos2021scinem,
+  title={SciNeM: A Scalable Data Science Tool for Heterogeneous Network Mining.},
+  author={Chatzopoulos, Serafeim and Vergoulis, Thanasis and Deligiannis, Panagiotis and Skoutas, Dimitrios and Dalamagas, Theodore and Tryfonopoulos, Christos},
+  booktitle={EDBT},
+  pages={654--657},
+  year={2021}
+}
+```
 
 ## Installation on Ubuntu
 
@@ -102,7 +114,7 @@ To package your application as a war in order to deploy it to an application ser
 
     ./mvnw -Pprod,war clean verify
 
-## Testing
+<!-- ## Testing
 
 To launch your application's tests, run:
 
@@ -140,7 +152,7 @@ If you need to re-run the Sonar phase, please be sure to specify at least the `i
 
 or
 
-For more information, refer to the [Code quality page][].
+For more information, refer to the [Code quality page][]. -->
 
 ## Using Docker 
 
