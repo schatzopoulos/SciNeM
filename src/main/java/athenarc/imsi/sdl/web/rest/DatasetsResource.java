@@ -7,10 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +25,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import athenarc.imsi.sdl.service.DatasetsService;
 import athenarc.imsi.sdl.service.util.FileUtil;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import springfox.documentation.annotations.ApiIgnore;
 
 /**
@@ -119,14 +119,14 @@ public class DatasetsResource {
         }
     )
     @GetMapping("/autocomplete")
-    public List<Document> autocomplete(@ApiParam(value = "The folder/dataset of the target entity", required = true) @RequestParam String folder,
+    public List<Document> autocomplete(@ApiParam(value = "The dataset of the target entity", required = true) @RequestParam String dataset,
                                        @ApiParam(value = "The target entity", required = true) @RequestParam String entity,
                                        @ApiParam(value = "The field of interest of the target entity", required = true) @RequestParam String field,
                                        @ApiParam(value = "The literal that will be matched to the entity values", required = true) @RequestParam String term,
                                        @ApiParam(value = "Whether the returned values are distinct or not") @RequestParam(required = false) Boolean uniqueValues) {
 
         try {
-            return datasetsService.autocomplete(folder, entity.substring(0, 1), field, term.toLowerCase(), uniqueValues);
+            return datasetsService.autocomplete(dataset, entity.substring(0, 1), field, term.toLowerCase(), uniqueValues);
         } catch (IOException e) {
             throw new RuntimeException("Error reading schema for datasets");
         }

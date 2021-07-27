@@ -21,7 +21,7 @@ public class QueryConfigVM {
     private String joinpath;
 
     @NotNull
-    private String folder;
+    private String dataset;
 
     @NotNull
     private Document constraints;
@@ -142,12 +142,12 @@ public class QueryConfigVM {
         this.constraints = constraints;
     }
 
-    public String getFolder() {
-        return this.folder;
+    public String getDataset() {
+        return this.dataset;
     }
 
-    public void setFolder(String _folder) {
-        this.folder = _folder;
+    public void setDataset(String _dataset) {
+        this.dataset = _dataset;
     }
 
     public String getSelectField() {
@@ -188,7 +188,7 @@ public class QueryConfigVM {
         sb.append("RankingParamsVM {");
         sb.append("\tmetapath: " + this.metapath);
         sb.append("\tconstraint: " + this.constraints.toString());
-        sb.append("\tfolder: " + this.folder);
+        sb.append("\tdataset: " + this.dataset);
         sb.append("}");
         return sb.toString();
     }

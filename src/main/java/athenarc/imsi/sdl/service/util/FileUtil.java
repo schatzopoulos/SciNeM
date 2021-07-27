@@ -125,7 +125,7 @@ public final class FileUtil {
         int searchK,
         int t,
         int targetId,
-        String folder,
+        String dataset,
         String selectField,
         int edgesThreshold,
         double prAlpha,
@@ -137,9 +137,9 @@ public final class FileUtil {
         Document config = new Document();
 
         // Input & Output files configuration
-        config.put("indir", Constants.HDFS_DATA_DIR + folder + "/nodes/");
-        config.put("irdir", Constants.HDFS_DATA_DIR + folder + "/relations/");
-        config.put("indir_local", Constants.DATA_DIR + folder + "/nodes/");
+        config.put("indir", Constants.HDFS_DATA_DIR + dataset + "/nodes/");
+        config.put("irdir", Constants.HDFS_DATA_DIR + dataset + "/relations/");
+        config.put("indir_local", Constants.DATA_DIR + dataset + "/nodes/");
 
         config.put("hin_out", hdfsOutputDir + "/" + Constants.HIN_OUT);
         config.put("join_hin_out", hdfsOutputDir + "/" + Constants.JOIN_HIN_OUT);
@@ -162,7 +162,7 @@ public final class FileUtil {
         config.put("final_ranking_community_out", outputDir + "/" + Constants.RANKING_COMMUNITY_OUT);
         config.put("final_community_ranking_out", outputDir + "/" + Constants.COMMUNITY_RANKING_OUT);
 
-        config.put("dataset", folder);
+        config.put("dataset", dataset);
         config.put("primary_entity", primaryEntity);
         config.put("select_field", selectField);
 

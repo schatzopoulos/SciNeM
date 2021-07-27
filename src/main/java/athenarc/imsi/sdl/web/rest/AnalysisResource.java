@@ -9,19 +9,29 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 
-import io.swagger.annotations.*;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import athenarc.imsi.sdl.service.AnalysisService;
 import athenarc.imsi.sdl.service.util.FileUtil;
 import athenarc.imsi.sdl.service.util.RandomUtil;
 import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Example;
+import io.swagger.annotations.ExampleProperty;
 
 /**
  * RankingResource controller
@@ -71,7 +81,7 @@ public class AnalysisResource {
                 config.getSearchK(),
                 config.getT(),
                 config.getTargetId(),
-                config.getFolder(),
+                config.getDataset(),
                 config.getSelectField(),
                 config.getEdgesThreshold(),
                 config.getPrAlpha(),

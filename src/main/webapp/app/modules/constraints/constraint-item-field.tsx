@@ -8,7 +8,7 @@ import ConditionFileSelector from 'app/modules/constraints/condition-file-select
 import { examples } from './constraint-examples';
 
 export interface IConstraintItemFieldProps {
-    datasetFolder: string,
+    dataset: string,
     data: any,
     entity: string,
     field: string,
@@ -172,6 +172,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         const enabled = this.props.enabled;
         const data = this.props.data;
         const index = data.index;
+        const dataset = this.props.dataset;
 
         const inputField = (type === 'numeric')
             ? <Input disabled={!enabled} defaultValue={''} onChange={this.handleNumericalInput.bind(this)} bsSize="sm"
@@ -186,7 +187,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
                 // the value directly
                 entity={entity} // used for the recommendations REST request
                 field={field}   // used for the recommendations REST request
-                folder={this.props.datasetFolder}   // used for the recommendations REST request
+                dataset={dataset}   // used for the recommendations REST request
                 disabled={!enabled}
                 placeholder={''}
                 size="sm"
@@ -281,7 +282,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
                         icon={'plus'} />
                     </Button>
                     <ConditionFileSelector
-                        folder={this.props.datasetFolder}
+                        dataset={this.props.dataset}
                         entity={this.props.entity}
                         field={this.props.field}
                         disabled={!enabled}

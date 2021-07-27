@@ -9,7 +9,7 @@ import PredefinedMetapathBrowser from 'app/modules/metapath/predefined-metapath-
 
 interface MetapathPanelProps {
     constraints: any,
-    datasetFolder: string,
+    dataset: string,
     metapath: any
     schema: any
     selectField: string,
@@ -92,17 +92,17 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
             const tempConstraints = { ...this.props.constraints };
 
             const recommendationList = this.getMetapathRecommendation(metapathEntities);
-            metapathEntities.forEach(element => {
+            metapathEntities.forEach( (element, index) => {
                 if (metapathEntityBoxes.length > 0) {
                     metapathEntityBoxes.push(<EntityConnector />);
                 }
                 if (!metapathTypesSeen.includes(element)) {
                     metapathTypesSeen.push(element);
                     metapathEntityBoxes.push(
-                        <EntityBox className='' color="dark" disabled entity={element}
+                        <EntityBox key={index} className='' color="dark" disabled entity={element}
                                    constraints={tempConstraints[idIndexedSchema[element]]}
                                    idIndexedSchema={idIndexedSchema}
-                                   datasetFolder={this.props.datasetFolder}
+                                   dataset={this.props.dataset}
                                    primaryEntity={metapathEntityBoxes.length === 0}
                                    selectField={this.props.selectField}
                                    selectFieldOptions={metapathEntityBoxes.length === 0 ? this.props.selectFieldOptions : null}
@@ -120,7 +120,7 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
                     metapathEntityBoxes.push(
                         <EntityBox className='' color="dark" disabled entity={element} constraintsControl={false}
                                    idIndexedSchema={idIndexedSchema}
-                                   datasetFolder={null} />
+                                   dataset={null} />
                     );
                 }
             });
@@ -149,7 +149,7 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
                         <Modal isOpen={this.state.predefinedMetapathsModalOpen} toggle={this.togglePredefinedMetapathsModal.bind(this)} className={'modal-lg'}>
                             <ModalHeader toggle={this.togglePredefinedMetapathsModal.bind(this)}>Select a predefined metapath</ModalHeader>
                             <ModalBody>
-                                <PredefinedMetapathBrowser dataset={this.props.datasetFolder} handlePredefinedMetapathAddition={metapathEntities=>{
+                                <PredefinedMetapathBrowser dataset={this.props.dataset} handlePredefinedMetapathAddition={metapathEntities=>{
                                     this.setState({
                                         predefinedMetapathsModalOpen: false
                                     }, this.props.handlePredefinedMetapathAddition(metapathEntities));

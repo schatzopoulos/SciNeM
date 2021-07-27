@@ -54,7 +54,7 @@ class EntityBox extends React.Component<any, any> {
 
     constraintSummary() {
         if (this.props.constraints) {
-            console.log(this.props.constraints);
+
             const entityDisjunctions = generateGroupsOfDisjunctions(this.props.constraints);
             const entityExpressions = entityDisjunctions.map(fieldDisjunctions => {
                 const fieldExpressions = fieldDisjunctions.map(disjunction => {
@@ -132,7 +132,7 @@ class EntityBox extends React.Component<any, any> {
                         </div>
                     }
                     {
-                        this.props.constraints && this.props.datasetFolder &&
+                        this.props.constraints && this.props.dataset &&
                         <div className={'d-inline-block'}>
                             <Button color="link" onClick={this.toggleConstraintsModal.bind(this)}
                                     className="btn-circle circle-button-svg-container mx-1"
@@ -149,7 +149,7 @@ class EntityBox extends React.Component<any, any> {
                                 <ModalBody>
                                     <ConstraintItem
                                         key={this.props.idIndexedSchema[this.props.entity]}
-                                        datasetFolder={this.props.datasetFolder}
+                                        dataset={this.props.dataset}
                                         entity={this.props.idIndexedSchema[this.props.entity]}
                                         entityConstraints={this.props.constraints}
                                         handleSwitch={this.props.handleSwitch}
