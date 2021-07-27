@@ -14,8 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import athenarc.imsi.sdl.domain.PredefinedMetapath;
-import athenarc.imsi.sdl.repository.PredefinedMetapathRepository;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
@@ -24,13 +22,12 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import athenarc.imsi.sdl.config.Constants;
+import athenarc.imsi.sdl.domain.PredefinedMetapath;
+import athenarc.imsi.sdl.repository.PredefinedMetapathRepository;
 import athenarc.imsi.sdl.service.util.FileUtil;
 
 @Service
@@ -43,7 +40,7 @@ public class AnalysisService {
 
     @Async
     public void submit(String id, ArrayList<String> analysis, String metapath, String joinpath, Document constraints,
-                       String constraintsExpression, String primaryEntity, int searchK, int t, int targetId, String folder,
+                       String constraintsExpression, String primaryEntity, int searchK, int t, int targetId, String dataset,
                        String selectField, int edgesThreshold, double prAlpha, double prTol, int simMinValues,
                        int lpaIter) throws java.io.IOException, InterruptedException {
 
@@ -53,12 +50,12 @@ public class AnalysisService {
         String outputLog = FileUtil.getLogfile(id);
 
         String config = FileUtil.writeConfig(analysis, outputDir, hdfsOutputDir, metapath, joinpath, constraints, constraintsExpression, primaryEntity, searchK, t,
-                targetId, folder, selectField, edgesThreshold, prAlpha, prTol, simMinValues, lpaIter);
+                targetId, dataset, selectField, edgesThreshold, prAlpha, prTol, simMinValues, lpaIter);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();
 
-        PredefinedMetapath predefinedMetapath = predefinedMetapathRepository.findFirstByDatasetAndMetapathAbbreviation(folder, metapath);
+        PredefinedMetapath predefinedMetapath = predefinedMetapathRepository.findFirstByDatasetAndMetapathAbbreviation(dataset, metapath);
         if (predefinedMetapath!=null) {
             PredefinedMetapath.Analytics metapathAnalytics = predefinedMetapath.getAnalytics();
             PredefinedMetapath.Analytics.TimesUsed frequencies = metapathAnalytics.getTimesUsed();

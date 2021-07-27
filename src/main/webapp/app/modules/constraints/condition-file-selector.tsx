@@ -102,7 +102,7 @@ class ConditionFileSelector extends React.Component<any, any> {
 
         axios.get('api/datasets/validate', {
             params: {
-                folder: this.props.folder,
+                folder: this.props.dataset,
                 entity: this.props.entity,
                 field: this.props.field,
                 terms: values.join(',')

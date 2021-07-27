@@ -49,8 +49,8 @@ const MetapathControl = (props) => {
     const closeMenu = () => setModal(false);
 
     const availableEntities = []
-    neighbors.forEach(item => {
-        availableEntities.push(<Button size={'sm'} className={'my-1 text-nowrap'} color="dark" onClick={() => {
+    neighbors.forEach( (item, index) => {
+        availableEntities.push(<Button key={index} size={'sm'} className={'my-1 text-nowrap'} color="dark" onClick={() => {
             toggle();
             props.onNewEntity(item[0]);
         }} block>{item[1]}</Button>);

@@ -222,7 +222,10 @@ export class Home extends React.Component<IHomeProps> {
 
         this.setState(newState, () => {
             if (this.state.metapath.length>2) {
-                this.props.getMetapathDescription(this.getCurrentDataset(), this.state.metapath.map(metapathCytoscapeNode=>metapathCytoscapeNode.data('label')));
+                this.props.getMetapathDescription(
+                    this.getCurrentDataset(),
+                    this.state.metapath.map(metapathCytoscapeNode=>metapathCytoscapeNode.data('label'))
+                );
             }
             this.animateNeighbors(lastNode);
         });
@@ -268,7 +271,9 @@ export class Home extends React.Component<IHomeProps> {
 
         this.setState(newState, () => {
             if (this.state.metapath.length>2) {
-                this.props.getMetapathDescription(this.getCurrentDataset(), this.state.metapath.map(metapathCytoscapeNode=>metapathCytoscapeNode.data('label')));
+                this.props.getMetapathDescription(
+                    this.getCurrentDataset(), 
+                    this.state.metapath.map(metapathCytoscapeNode => metapathCytoscapeNode.data('label')));
             }
             this.animateNeighbors(node);
         });
@@ -479,7 +484,6 @@ export class Home extends React.Component<IHomeProps> {
     execute(e, rerunAnalysis) {
 
         const analysisType = (rerunAnalysis) ? rerunAnalysis : this.state.analysis;
-        const datasetToUse = this.getCurrentDataset();
 
         const constaintDescriptions = {};
         Object.keys(this.state.constraints).forEach((entity, index) => {
@@ -496,7 +500,7 @@ export class Home extends React.Component<IHomeProps> {
             this.state.constraints,
             constraintsExpression,
             primaryEntity,
-            this.props.schemas[datasetToUse]['folder'],
+            this.getCurrentDataset(),
             this.state.selectField,
             this.state.targetEntity,
             this.state.edgesThreshold,
@@ -787,8 +791,6 @@ export class Home extends React.Component<IHomeProps> {
 
         this.setState({
             targetEntity: selected
-        }, () => {
-            console.log('changed');
         });
     }
 
@@ -890,12 +892,10 @@ export class Home extends React.Component<IHomeProps> {
         const constraintExpressions = Object.keys(constraintSegments).map(entity => {
             const entityFields = constraintSegments[entity];
             const fieldExpressions = entityFields.map(field => {
-                console.log('For: ');
-                console.log(field);
                 const disjunctionExpressions = field.map(disjunction => {
                     if (disjunction.length > 1) {
                         const conjunctionExpressions = disjunction.map(conjunctionElement => {
-                            console.log(conjunctionElement);
+                            // console.log(conjunctionElement);
                             return conjunctionElement.field + conjunctionElement.condition;
                         });
                         if (field.length > 1) {
@@ -957,14 +957,11 @@ export class Home extends React.Component<IHomeProps> {
         const validAnalysisType = this.state.analysis.length !== 0;
         const validTargetEntity = (!this.state.analysis.includes('Similarity Search') || (this.state.analysis.includes('Similarity Search') && this.state.targetEntity !== ''));
         const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
-        let datasetFolder = '';
         let datasetToUse;
         if (this.props.schemas) {
             datasetToUse = this.getCurrentDataset();
-            datasetFolder = this.props.schemas[datasetToUse]['folder'];
         }
-        console.log(this.props.metapathInfo);
-        console.log(this.state.metapath);
+
         const rankingLabel = <span>
 			Ranking <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle"
                                      title="Ranking analysis is perfomed using PageRank." />
@@ -1032,7 +1029,7 @@ export class Home extends React.Component<IHomeProps> {
                                 <MetapathPanel
                                     metapath={this.state.metapath}
                                     schema={this.props.schemas[datasetToUse]}
-                                    datasetFolder={datasetFolder}
+                                    dataset={datasetToUse}
                                     constraints={this.state.constraints}
                                     selectField={this.state.selectField}
                                     selectFieldOptions={selectFieldOptions}
@@ -1284,6 +1281,7 @@ export class Home extends React.Component<IHomeProps> {
                                     <Col xs={'12'}>
                                         <Row>
                                             <Col xs={'10'} className={'px-0'}>
+                                                
                                                 <AutocompleteInput
                                                     id="targetEntityInput"
                                                     placeholder={_.isEmpty(this.state.metapath) ? 'First, select a metapath' : `Search for ${selectedEntity} entities`}
@@ -1309,7 +1307,7 @@ export class Home extends React.Component<IHomeProps> {
                                                     }}
                                                     entity={selectedEntity}
                                                     field={this.state.selectField}
-                                                    folder={datasetFolder}
+                                                    dataset={datasetToUse}
                                                     disabled={_.isEmpty(this.state.metapath)}
                                                     size='sm'
                                                     index={0}
