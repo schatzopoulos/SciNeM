@@ -1,0 +1,32 @@
+# YAML 1.2
+---
+cff-version: "1.1.0"
+message: "If you use this software, please cite it using these metadata."
+title: "SciNeM: A Scalable Data Science Tool for Heterogeneous Network Mining"
+doi: "10.5441/002/edbt.2021.76"
+authors: 
+  -
+    family-names: Chatzopoulos
+    given-names: Serafeim
+    orcid: "https://orcid.org/0000-0003-1714-5225"
+  -
+    family-names: Vergoulis
+    given-names: Thanasis
+    orcid: "https://orcid.org/0000-0003-0555-4128"
+  -
+    family-names: Deligiannis
+    given-names: Panagiotis
+  -
+    family-names: Skoutas
+    given-names: Dimitrios
+  -
+    family-names: Dalamagas
+    given-names: Theodore
+    orcid: "https://orcid.org/0000-0002-5002-7901"
+  -
+    family-names: Tryfonopoulos
+    given-names: Christos
+    orcid: "https://orcid.org/0000-0003-0640-9088"
+journal: "EDBT 2021"
+repository-code: "https://github.com/schatzopoulos/SciNeM"
+...
