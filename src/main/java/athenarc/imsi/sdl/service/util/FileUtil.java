@@ -146,7 +146,7 @@ public final class FileUtil {
 
         config.put("hdfs_out_dir", hdfsOutputDir);
         config.put("local_out_dir", outputDir);
-			
+
         config.put("ranking_out", hdfsOutputDir + "/" + Constants.RANKING_OUT);
         config.put("communities_out", hdfsOutputDir + "/" + Constants.COMMUNITY_DETECTION_OUT);
         config.put("communities_details", outputDir + "/" + Constants.COMMUNITY_DETAILS);
@@ -178,7 +178,14 @@ public final class FileUtil {
 
         config.put("t", t);
         config.put("sim_min_values", simMinValues);
-        config.put("community_detection_iter", lpaIter);
+
+	// Community detection params
+
+	config.put("inputCSVDelimiter", "\t");
+        config.put("community_algorithm", "Vanilla LPA"); // TODO: set parameters below from UI
+        config.put("maxSteps", lpaIter);
+	config.put("threshold", 0);
+	config.put("stopCriterion", 10);
 
         // Query specific params
         Document query = new Document();
