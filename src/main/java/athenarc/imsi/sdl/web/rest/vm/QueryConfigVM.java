@@ -16,7 +16,6 @@ public class QueryConfigVM {
     @Size(min = 1, max = 50)
     private String metapath;
 
-    @NotNull
     @Size(min = 1, max = 50)
     private String joinpath;
 
