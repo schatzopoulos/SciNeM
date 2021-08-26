@@ -186,6 +186,8 @@ public final class FileUtil {
         config.put("maxSteps", lpaIter);
 	config.put("threshold", 0);
 	config.put("stopCriterion", 10);
+        config.put("nOfCommunities", 20);
+        config.put("ratio", 0.6);
 
         // Query specific params
         Document query = new Document();
