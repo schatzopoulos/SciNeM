@@ -161,7 +161,12 @@ function formatConstraints(payload, constraints) {
       }
 
       if (entityConditions.length > 0) {
-        payload['constraints'][e] = entityConditions.join(' ');
+        let strConditions = entityConditions.join(' ');
+        // if conditions starts with or || and, then remove it
+        if (strConditions.startsWith('or') || strConditions.startsWith('and')) {
+          strConditions = strConditions.substr(strConditions.indexOf(' ') + 1);
+        }
+        payload['constraints'][e] = strConditions;
       }
     });
   });
