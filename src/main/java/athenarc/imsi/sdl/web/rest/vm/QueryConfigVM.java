@@ -44,7 +44,13 @@ public class QueryConfigVM {
     private double prAlpha;
     private double prTol;
     private int simMinValues;
-    private int lpaIter;
+
+    private String commAlgorithm;
+    private double commThreshold;
+    private int commStopCriterion; 
+    private int commMaxSteps;
+    private int commNumOfCommunities;
+    private double commRatio;
 
     public void setConstraintsExpression(String constraintsExpression) {
         this.constraintsExpression=constraintsExpression;
@@ -60,14 +66,6 @@ public class QueryConfigVM {
 
     public void setSimMinValues(int simMinValues) {
         this.simMinValues = simMinValues;
-    }
-
-    public int getLpaIter() {
-        return this.lpaIter;
-    }
-
-    public void setLpaIter(int lpaIter) {
-        this.lpaIter = lpaIter;
     }
 
     public String getPrimaryEntity() {
@@ -190,5 +188,53 @@ public class QueryConfigVM {
         sb.append("\tdataset: " + this.dataset);
         sb.append("}");
         return sb.toString();
+    }
+
+    public String getCommAlgorithm() {
+        return commAlgorithm;
+    }
+
+    public void setCommAlgorithm(String commAlgorithm) {
+        this.commAlgorithm = commAlgorithm;
+    }
+
+    public double getCommThreshold() {
+        return commThreshold;
+    }
+
+    public void setCommThreshold(double commThreshold) {
+        this.commThreshold = commThreshold;
+    }
+
+    public int getCommStopCriterion() {
+        return commStopCriterion;
+    }
+
+    public void setCommStopCriterion(int commStopCriterion) {
+        this.commStopCriterion = commStopCriterion;
+    }
+
+    public int getCommMaxSteps() {
+        return commMaxSteps;
+    }
+
+    public void setCommMaxSteps(int commMaxSteps) {
+        this.commMaxSteps = commMaxSteps;
+    }
+
+    public int getCommNumOfCommunities() {
+        return commNumOfCommunities;
+    }
+
+    public void setCommNumOfCommunities(int commNumOfCommunities) {
+        this.commNumOfCommunities = commNumOfCommunities;
+    }
+
+    public double getCommRatio() {
+        return commRatio;
+    }
+
+    public void setCommRatio(double commRatio) {
+        this.commRatio = commRatio;
     }
 }

@@ -87,7 +87,12 @@ public class AnalysisResource {
                 config.getPrAlpha(),
                 config.getPrTol(),
                 config.getSimMinValues(),
-                config.getLpaIter()
+                config.getCommAlgorithm(),
+                config.getCommThreshold(),
+                config.getCommStopCriterion(),
+                config.getCommMaxSteps(),
+                config.getCommNumOfCommunities(),
+                config.getCommRatio()
             );
 
         } catch (java.io.IOException | InterruptedException e) {
