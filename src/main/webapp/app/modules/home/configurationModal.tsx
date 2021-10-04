@@ -171,8 +171,8 @@ const ConfigurationModal = (props) => {
                                     onChange={handleAdvancedOptions}>
                                     {
                                         _.map(commAlgorithms, (value, key) => {
-                                            // const isDisabled = (value === "PIC" || value === "HPIC" || value === "OLPA");
-                                            return <option key={value} value={value} disabled={false}>{value}</option>;
+                                            const isDisabled = (value === "PIC" || value === "HPIC" || value === "OLPA");
+                                            return <option key={value} value={value} disabled={isDisabled}>{value}</option>;
                                     })}
                                 </Input>
                                 <br />
