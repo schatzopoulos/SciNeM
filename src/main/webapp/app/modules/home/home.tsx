@@ -10,11 +10,6 @@ import {
     Container,
     CustomInput,
     Input,
-    Label,
-    Modal,
-    ModalBody,
-    ModalFooter,
-    ModalHeader,
     Progress,
     Row,
     Spinner,
@@ -32,6 +27,8 @@ import MetapathPanel from '../metapath/metapath-panel';
 import AutocompleteInput from '../datasets/autocomplete-input';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import FeedbackButton from './feedback';
+import ConfigurationModal from './configurationModal';
+import { throws } from 'assert';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -61,13 +58,23 @@ export class Home extends React.Component<IHomeProps> {
         configurationActive: false,
 
         edgesThreshold: 5,
+
+        // ranking params
         prTol: 0.000001,
         prAlpha: 0.5,
 
+        // sim search & join params
         simMinValues: 5,
         searchK: 100,
         hashTables: 1,
-        lpaIter: 5
+
+        // community detection params
+        commAlgorithm: "Vanilla LPA",
+        commThreshold: 0, 
+        commStopCriterion: 10, 
+        commMaxSteps: 5,
+        commNumOfCommunities: 20, 
+        commRatio: 0.6,
     };
     cy: any;
     polling: any;
@@ -509,7 +516,12 @@ export class Home extends React.Component<IHomeProps> {
             this.state.simMinValues,
             this.state.searchK,
             this.state.hashTables,
-            this.state.lpaIter,
+            this.state.commAlgorithm,
+            this.state.commThreshold, 
+            this.state.commStopCriterion, 
+            this.state.commMaxSteps,
+            this.state.commNumOfCommunities, 
+            this.state.commRatio,
             (rerunAnalysis) ? 15 : undefined,
             (rerunAnalysis) ? 1 : undefined
         );
@@ -1089,161 +1101,28 @@ export class Home extends React.Component<IHomeProps> {
                                                 onClick={this.toggleConfiguration.bind(this)}>
                                             <FontAwesomeIcon icon="cogs" /> Configuration
                                         </Button>
-                                        <Modal isOpen={this.state.configurationActive}
-                                               toggle={this.toggleConfiguration.bind(this)} className={'w-75 mw-100'}>
-                                            <ModalHeader>
-                                                Analysis configuration
-                                            </ModalHeader>
-                                            <ModalBody>
-                                                <Container>
-                                                    <Row>
-                                                        <Col md='3'>
-                                                            <Card className={'configuration-card'}>
-                                                                <h5>General</h5>
+                                        <ConfigurationModal 
+                                            isOpen={this.state.configurationActive}
+                                            
+                                            edgesThreshold={this.state.edgesThreshold}
+                                            
+                                            prAlpha={this.state.prAlpha}
+                                            prTol={this.state.prTol}
+                                            
+                                            searchK={this.state.searchK}
+                                            hashTables={this.state.hashTables}
+                                            simMinValues={this.state.simMinValues}
+                                            
+                                            commAlgorithm={this.state.commAlgorithm}
+                                            commMaxSteps={this.state.commMaxSteps}
+                                            commStopCriterion={this.state.commStopCriterion}
+                                            commThreshold={this.state.commThreshold}
+                                            commNumOfCommunities={this.state.commNumOfCommunities}
+                                            commRatio={this.state.commRatio}
 
-                                                                <Label for="edgesThreshold">
-                                                                    Minimum number of instances for a metapath-based
-                                                                    connection to be considered <FontAwesomeIcon
-                                                                    style={{ color: '#17a2b8' }} icon="question-circle"
-                                                                    title="Connections with fewer occurences are not considered in the analysis; it affects the overall efficiency." />
-                                                                </Label>
-                                                                <Input id="edgesThreshold"
-                                                                       value={this.state.edgesThreshold}
-                                                                       bsSize="sm" type='number'
-                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
-                                                                {
-                                                                    (this.state.edgesThreshold === '') &&
-                                                                    <span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-                                                                }
-                                                            </Card>
-                                                        </Col>
-                                                        <Col md='3'>
-                                                            <Card className={'configuration-card'}>
-                                                                <h5>Ranking</h5>
-                                                                <Label for="edgesThreshold">
-                                                                    Alpha <FontAwesomeIcon style={{ color: '#17a2b8' }}
-                                                                                           icon="question-circle"
-                                                                                           title="The random reset propability of the PageRank algorithm." />
-                                                                </Label>
-                                                                <Input id="prAlpha" value={this.state.prAlpha}
-                                                                       bsSize="sm"
-                                                                       type='number'
-                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
-                                                                {
-                                                                    (this.state.prAlpha === '') &&
-                                                                    <span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-                                                                }
-                                                                <br />
-                                                                <Label for="edgesThreshold">
-                                                                    Tolerance <FontAwesomeIcon
-                                                                    style={{ color: '#17a2b8' }}
-                                                                    icon="question-circle"
-                                                                    title="The tolerance allowed for convergence." />
-                                                                </Label>
-                                                                <Input id="prTol" value={this.state.prTol} bsSize="sm"
-                                                                       type='number'
-                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
-                                                                {
-                                                                    (this.state.prTol === '') &&
-                                                                    <span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-                                                                }
-                                                            </Card>
-                                                        </Col>
-                                                        <Col md='3'>
-                                                            <Card className={'configuration-card'}>
-                                                                <h5>Similarity Analyses</h5>
-
-                                                                <Label for="searchK">
-                                                                    k <FontAwesomeIcon style={{ color: '#17a2b8' }}
-                                                                                       icon="question-circle"
-                                                                                       title="Number of retrieved results." />
-                                                                </Label>
-                                                                <Input id="searchK" value={this.state.searchK}
-                                                                       bsSize="sm"
-                                                                       type='number'
-                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
-                                                                {
-                                                                    (this.state.searchK === '') &&
-                                                                    <span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-                                                                }
-
-                                                                <br />
-                                                                <Label for="hashTables">
-                                                                    Hash Tables <FontAwesomeIcon
-                                                                    style={{ color: '#17a2b8' }}
-                                                                    icon="question-circle"
-                                                                    title="Number of hash tables used for LSH." />
-                                                                </Label>
-                                                                <Input id="hashTables" value={this.state.hashTables}
-                                                                       bsSize="sm"
-                                                                       type='number'
-                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
-                                                                {
-                                                                    (this.state.hashTables === '') &&
-                                                                    <span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-                                                                }
-                                                                <br />
-                                                                <Label for="simMinValues">
-                                                                    Min. values <FontAwesomeIcon
-                                                                    style={{ color: '#17a2b8' }}
-                                                                    icon="question-circle"
-                                                                    title="Min number of values for each entity." />
-                                                                </Label>
-                                                                <Input id="simMinValues" value={this.state.simMinValues}
-                                                                       bsSize="sm"
-                                                                       type='number'
-                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
-                                                                {
-                                                                    (this.state.simMinValues === '') &&
-                                                                    <span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-                                                                }
-                                                            </Card>
-
-                                                        </Col>
-                                                        <Col md='3'>
-                                                            <Card className={'configuration-card'}>
-                                                                <h5>Community Detection</h5>
-
-                                                                <Label for="lpaIter">
-                                                                    Iterations <FontAwesomeIcon
-                                                                    style={{ color: '#17a2b8' }}
-                                                                    icon="question-circle"
-                                                                    title="Number of iterations for LPA." />
-                                                                </Label>
-                                                                <Input id="lpaIter" value={this.state.lpaIter}
-                                                                       bsSize="sm"
-                                                                       type='number'
-                                                                       onChange={this.handleAdvancedOptions.bind(this)} />
-                                                                {
-                                                                    (this.state.lpaIter === '') &&
-                                                                    <span className="attribute-type text-danger">
-																This field cannot be empty.
-												</span>
-                                                                }
-                                                            </Card>
-                                                        </Col>
-
-                                                    </Row>
-                                                </Container>
-                                            </ModalBody>
-                                            <ModalFooter>
-                                                <Button color={'info'}
-                                                        onClick={this.toggleConfiguration.bind(this)}><FontAwesomeIcon
-                                                    icon={'save'} /> Save</Button>
-                                            </ModalFooter>
-                                        </Modal>
+                                            toggleConfiguration={this.toggleConfiguration.bind(this)}
+                                            handleAdvancedOptions={this.handleAdvancedOptions.bind(this)}
+                                        />
                                     </Col>
                                 </Row>
                             </Col>

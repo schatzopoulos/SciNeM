@@ -131,7 +131,12 @@ public final class FileUtil {
         double prAlpha,
         double prTol,
         int simMinValues,
-        int lpaIter
+        String commAlgorithm, 
+        double commThreshold, 
+        int commStopCriterion, 
+        int commMaxSteps, 
+        int commNumOfCommunities, 
+        double commRatio
     ) throws IOException {
 
         Document config = new Document();
@@ -179,15 +184,14 @@ public final class FileUtil {
         config.put("t", t);
         config.put("sim_min_values", simMinValues);
 
-	// Community detection params
-
-	config.put("inputCSVDelimiter", "\t");
-        config.put("community_algorithm", "Vanilla LPA"); // TODO: set parameters below from UI
-        config.put("maxSteps", lpaIter);
-	config.put("threshold", 0);
-	config.put("stopCriterion", 10);
-        config.put("nOfCommunities", 20);
-        config.put("ratio", 0.6);
+	    // Community detection params
+	    config.put("inputCSVDelimiter", "\t");
+        config.put("community_algorithm", commAlgorithm);
+        config.put("maxSteps", commMaxSteps);
+	    config.put("threshold", commThreshold);
+        config.put("stopCriterion", commStopCriterion);
+        config.put("nOfCommunities", commNumOfCommunities);
+        config.put("ratio", commRatio);
 
         // Query specific params
         Document query = new Document();

@@ -225,7 +225,12 @@ export const analysisRun = (
   simMinValues,
   searchK,
   hashTables,
-  lpaIter,
+  commAlgorithm,
+  commThreshold,
+  commStopCriterion,
+  commMaxSteps,
+  commNumOfCommunities,
+  commRatio,
   w,
   minValues
 ) => {
@@ -245,7 +250,12 @@ export const analysisRun = (
     prAlpha,
     prTol,
     simMinValues,
-    lpaIter
+    commAlgorithm,
+    commThreshold,
+    commStopCriterion,
+    commMaxSteps,
+    commNumOfCommunities,
+    commRatio
   };
 
   formatConstraints(payload, constraints);

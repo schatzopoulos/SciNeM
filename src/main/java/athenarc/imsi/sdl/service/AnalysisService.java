@@ -10,9 +10,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
@@ -42,7 +40,7 @@ public class AnalysisService {
     public void submit(String id, ArrayList<String> analysis, String metapath, String joinpath, Document constraints,
                        String constraintsExpression, String primaryEntity, int searchK, int t, int targetId, String dataset,
                        String selectField, int edgesThreshold, double prAlpha, double prTol, int simMinValues,
-                       int lpaIter) throws java.io.IOException, InterruptedException {
+                       String commAlgorithm, double commThreshold, int commStopCriterion, int commMaxSteps, int commNumOfCommunities, double commRatio) throws java.io.IOException, InterruptedException {
 
         // create folder to store results
         String outputDir = FileUtil.createDir(id);
@@ -50,7 +48,7 @@ public class AnalysisService {
         String outputLog = FileUtil.getLogfile(id);
 
         String config = FileUtil.writeConfig(analysis, outputDir, hdfsOutputDir, metapath, joinpath, constraints, constraintsExpression, primaryEntity, searchK, t,
-                targetId, dataset, selectField, edgesThreshold, prAlpha, prTol, simMinValues, lpaIter);
+                targetId, dataset, selectField, edgesThreshold, prAlpha, prTol, simMinValues, commAlgorithm, commThreshold, commStopCriterion, commMaxSteps, commNumOfCommunities, commRatio);
 
         // prepare ranking script arguments
         ProcessBuilder pb = new ProcessBuilder();
@@ -141,7 +139,7 @@ public class AnalysisService {
             long communityPositionLimit = reachEnd ? -1 : communityPositions.get(firstCommunityIndex + Constants.PAGE_SIZE);
 
             RandomAccessFile communityResultsFile = new RandomAccessFile(analysisFile, "r");
-            Set<String> communityIds = new HashSet<>();
+            // Set<String> communityIds = new HashSet<>();
             long currentPosition;
             String line = null;
             communityResultsFile.seek(communityPositions.get(firstCommunityIndex));
