@@ -180,7 +180,7 @@ export class Home extends React.Component<IHomeProps> {
     registerMultipleNodes(nodeList) {
         const temporaryMetapath = [...this.state.metapath];
         const getMetapathStr = metapath => metapath.map(n => {
-            console.log(n);
+            // console.log(n);
             return n.data('label').substr(0, 1);
         }).join('');
         let temporaryNeighborhood = this.state.neighbors;
@@ -462,6 +462,8 @@ export class Home extends React.Component<IHomeProps> {
         this.checkAndCreateConstraints(constraints, { entity, field }, null, logicOp, conditionOp, value);
         this.setState({
             constraints
+        }, () => {
+            // console.warn(this.state.constraints);
         });
     }
 
@@ -1059,25 +1061,25 @@ export class Home extends React.Component<IHomeProps> {
                                     handlePredefinedMetapathAddition={this.setMetapath.bind(this)}/>
                                 }
                                 {this.checkMetapathDefined() &&
-                                <Row className={'justify-content-center mt-4'}>
-                                    <Col md={'12'}>
-                                        <div className={'balloon bg-light-grey'}>
-                                            <div>
-                                                {this.generateNotification()}
-                                            </div>
-                                            {this.checkSymmetricMetapath() &&
-                                            <div>
-                                                <hr className={'m-0'} />
+                                    <Row className={'justify-content-center mt-4'}>
+                                        <Col md={'12'}>
+                                            <div className={'balloon bg-light-grey'}>
                                                 <div>
-                                                    <p className={'m-0'}>
-                                                        {this.getInterpretation()}
-                                                    </p>
+                                                    {this.generateNotification()}
                                                 </div>
+                                                {this.checkSymmetricMetapath() &&
+                                                <div>
+                                                    <hr className={'m-0'} />
+                                                    <div>
+                                                        <p className={'m-0'}>
+                                                            {this.getInterpretation()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                }
                                             </div>
-                                            }
-                                        </div>
-                                    </Col>
-                                </Row>
+                                        </Col>
+                                    </Row>
                                 }
                             </Col>
                         </Row>

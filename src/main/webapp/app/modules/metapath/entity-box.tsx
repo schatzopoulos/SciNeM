@@ -3,10 +3,12 @@ import { Button, Col, Input, Modal, ModalBody, ModalFooter, ModalHeader, Row } f
 
 import './entity-box.css';
 import { generateGroupsOfDisjunctions } from 'app/shared/util/constraint-utils';
-import ConstraintItem from 'app/modules/constraints/constraint-item';
+import ConstraintItems from 'app/modules/constraints/constraint-items';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 class EntityBox extends React.Component<any, any> {
+    _constraintItemsRef: any;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -77,6 +79,13 @@ class EntityBox extends React.Component<any, any> {
         }
         return '';
     }
+    saveAndClose() {
+        // save current constraints even if not explicitly saved
+        this._constraintItemsRef.save();
+
+        // toggle modal's visibility
+        this.toggleConstraintsModal();
+    }
 
     render() {
         return (
@@ -109,8 +118,7 @@ class EntityBox extends React.Component<any, any> {
                                 <ModalBody>
                                     <Row>
                                         <Col md='12' style={{ 'textAlign': 'center' }}>
-                                            <h5>Identifier for {this.props.idIndexedSchema[this.props.entity]}
-                                                <FontAwesomeIcon
+                                            <h5>Identifier for {this.props.idIndexedSchema[this.props.entity]} <FontAwesomeIcon
                                                     style={{ color: '#17a2b8' }}
                                                     icon="question-circle"
                                                     title="Entities are presented with this attribute in the results" />
@@ -147,7 +155,8 @@ class EntityBox extends React.Component<any, any> {
                             <Modal isOpen={this.state.constraintsModal} toggle={this.toggleConstraintsModal.bind(this)}
                                    className={'w-75 mw-100'}>
                                 <ModalBody>
-                                    <ConstraintItem
+                                    <ConstraintItems
+                                        ref={(r) => this._constraintItemsRef = r}
                                         key={this.props.idIndexedSchema[this.props.entity]}
                                         dataset={this.props.dataset}
                                         entity={this.props.idIndexedSchema[this.props.entity]}
@@ -179,7 +188,7 @@ class EntityBox extends React.Component<any, any> {
                                     </Col>
                                     <Col xs={'4'} className={'text-right'}>
                                         <Button color={'info'}
-                                                onClick={this.toggleConstraintsModal.bind(this)}><FontAwesomeIcon
+                                                onClick={this.saveAndClose.bind(this)}><FontAwesomeIcon
                                             icon={'save'} /> Save</Button>
                                     </Col>
                                 </ModalFooter>
@@ -187,8 +196,7 @@ class EntityBox extends React.Component<any, any> {
                         </div>
                     }
                     {this.numberOfConditions() > 0 &&
-                    <div title={this.constraintSummary()}
-                         className={'d-inline-block text-muted constraints-number'}>{`(${this.numberOfConditions()})`}</div>
+                        <div title={this.constraintSummary()} className={'d-inline-block text-muted constraints-number'}>&nbsp;{`(${this.numberOfConditions()})`}</div>
                     }
                 </div>
             </Col>

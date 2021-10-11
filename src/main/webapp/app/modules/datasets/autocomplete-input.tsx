@@ -179,7 +179,6 @@ export class AutocompleteInput extends React.Component<IAutocompleteInputProps> 
     }
 
     render() {
-        console.warn(this.props.dataset);
         const asyncTypeaheadJsx=<AsyncTypeahead
             allowNew={false}
             isLoading={this.state.isLoading}
