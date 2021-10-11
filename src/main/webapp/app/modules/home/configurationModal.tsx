@@ -19,7 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const ConfigurationModal = (props) => {
 
-    const commAlgorithms = ["Vanilla LPA", "LPA", "OLPA", "PIC", "HPIC"];
+    const commAlgorithms = ["LPA-GraphFrames", "LPA", "OLPA", "PIC", "HPIC"];
 
     const toggleConfiguration = () => {
         props.toggleConfiguration();
