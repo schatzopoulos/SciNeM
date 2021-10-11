@@ -25,10 +25,18 @@ export interface IConstraintItemProps {
     handleMultipleAddition: any
 }
 
-export class ConstraintItem extends React.Component<IConstraintItemProps> {
+export class ConstraintItems extends React.Component<IConstraintItemProps> {
+    _constraintItemFieldsRefs: any = {};
 
     constructor(props) {
         super(props);
+    }
+
+    save() {
+        // save current constraints even if not explicitly saved
+        Object.keys(this._constraintItemFieldsRefs).forEach(key => {
+            this._constraintItemFieldsRefs[key].handleAddition();
+        });
     }
 
 	render() {
@@ -47,6 +55,7 @@ export class ConstraintItem extends React.Component<IConstraintItemProps> {
             return _.map(fieldConstraints['conditions'], (condition, index: number) => {
                 return index===0
                     ? <ConstraintItemField
+                        ref={(r) => this._constraintItemFieldsRefs[field] = r}
                         key={ `${entity}_${field}_${index}` }
                         data={ condition }
                         dataset= { dataset }
@@ -85,7 +94,7 @@ export class ConstraintItem extends React.Component<IConstraintItemProps> {
 	}
 };
 
-export default ConstraintItem;
+export default ConstraintItems;
 
 
 

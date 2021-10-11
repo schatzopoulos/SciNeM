@@ -1,4 +1,4 @@
-import './constraint-item.scss';
+import './constraint-items.scss';
 
 import React from 'react';
 import { Button, Col, CustomInput, Input, Label, Row } from 'reactstrap';
@@ -131,8 +131,8 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
     handleAddition(e) {
         if (e) {
             e.preventDefault();
-            this.submitCurrentValue();
         }
+        this.submitCurrentValue();
     }
 
     getExample(entity, field) {
