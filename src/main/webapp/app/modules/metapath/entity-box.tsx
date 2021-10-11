@@ -90,19 +90,15 @@ class EntityBox extends React.Component<any, any> {
     render() {
         return (
             <Col xs={'auto'} className="position-relative entity-box px-0">
-                <div>
-                    <Button color="dark" size="lg" className={'text-nowrap'}
-                            disabled>{this.props.idIndexedSchema[this.props.entity]}</Button>
-                </div>
                 <div className="position-absolute ">
                     {
                         this.props.primaryEntity &&
                         <div className={'d-inline-block'}>
                             <Button color="link" onClick={this.toggleReferenceKeyModal.bind(this)}
-                                    title={'Show/edit entity identifier'+(this.props.selectField?`. Currently selected: `+this.props.selectField:'')}
+                                    title={'Change entity identifier'+(this.props.selectField?`; ` + this.props.selectField : 'is currently selected.')}
                                     className="btn-circle circle-button-svg-container mx-1">
                                 <svg width="1em" height="1em" viewBox="0 0 16 16"
-                                     className={'bi bi-key-fill text-secondary'}
+                                     className={'bi bi-key-fill text-info'}
                                      fill={'currentColor'}
                                      xmlns="http://www.w3.org/2000/svg">
                                     <path fillRule="evenodd"
@@ -139,6 +135,12 @@ class EntityBox extends React.Component<any, any> {
                             </Modal>
                         </div>
                     }
+                </div>
+                <div>
+                    <Button color="dark" size="lg" className={'text-nowrap'}
+                            disabled>{this.props.idIndexedSchema[this.props.entity]}</Button>
+                </div>
+                <div className="position-absolute ">
                     {
                         this.props.constraints && this.props.dataset &&
                         <div className={'d-inline-block'}>
