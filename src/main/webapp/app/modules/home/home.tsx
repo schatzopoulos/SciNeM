@@ -69,7 +69,7 @@ export class Home extends React.Component<IHomeProps> {
         hashTables: 1,
 
         // community detection params
-        commAlgorithm: "Vanilla LPA",
+        commAlgorithm: "LPA-GraphFrames",
         commThreshold: 0, 
         commStopCriterion: 10, 
         commMaxSteps: 5,
