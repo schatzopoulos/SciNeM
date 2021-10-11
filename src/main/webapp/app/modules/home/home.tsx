@@ -48,7 +48,7 @@ export class Home extends React.Component<IHomeProps> {
         neighbors: undefined,
         constraints: {},
         analysis: ['Ranking'],
-        dataset: null,
+        dataset: '',
         selectField: '',
 
         typedTargetEntityValue: '',
@@ -957,7 +957,7 @@ export class Home extends React.Component<IHomeProps> {
     }
 
     getCurrentDataset() {
-        return (this.state.dataset === null) ? Object.keys(this.props.schemas)[0] : this.state.dataset;
+        return (this.state.dataset === '') ? Object.keys(this.props.schemas)[0] : this.state.dataset;
     }
 
     render() {
