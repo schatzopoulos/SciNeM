@@ -57,7 +57,7 @@ const MetapathControl = (props) => {
     });
 
     return (
-        <div className="d-flex flex-column justify-content-center">
+        <div className="d-flex flex-column justify-content-center" style={{paddingRight: '1px'}}>
             <div className="pl-2px position-relative">
                 <Button color="success" className="btn-circle circle-button-character-container" onMouseEnter={openMenu} onMouseLeave={closeMenu}>
                   <span>+</span>

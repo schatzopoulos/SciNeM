@@ -3,10 +3,6 @@
   cursor: default !important;
 }
 
-.recommendation-entity-box {
-  margin: 20px 0;
-}
-
 .recommendation-entity-box button.emphasized {
   background-color: #6e6e6e !important;
 }

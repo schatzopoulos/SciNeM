@@ -89,13 +89,13 @@ class EntityBox extends React.Component<any, any> {
 
     render() {
         return (
-            <Col xs={'auto'} className="position-relative entity-box px-0">
-                <div className="position-absolute ">
+            <Col xs={'auto'} className="position-relative entity-box" style={{'padding': 0}}>
+                    <div className={'d-inline-block'}>
                     {
                         this.props.primaryEntity &&
-                        <div className={'d-inline-block'}>
+                        <div>
                             <Button color="link" onClick={this.toggleReferenceKeyModal.bind(this)}
-                                    title={'Change entity identifier'+(this.props.selectField?`; ` + this.props.selectField : 'is currently selected.')}
+                                    title={'Change entity identifier'+(this.props.selectField?`; ` + this.props.selectField + ' is currently selected.' : '')}
                                     className="btn-circle circle-button-svg-container mx-1">
                                 <svg width="1em" height="1em" viewBox="0 0 16 16"
                                      className={'bi bi-key-fill text-info'}
@@ -135,18 +135,18 @@ class EntityBox extends React.Component<any, any> {
                             </Modal>
                         </div>
                     }
-                </div>
+                    </div>
+
                 <div>
-                    <Button color="dark" size="lg" className={'text-nowrap'}
-                            disabled>{this.props.idIndexedSchema[this.props.entity]}</Button>
+                    <Button color="dark" disabled>{this.props.idIndexedSchema[this.props.entity]}</Button>
                 </div>
-                <div className="position-absolute ">
+                    <div className={'d-inline-block'}>
                     {
-                        this.props.constraints && this.props.dataset &&
-                        <div className={'d-inline-block'}>
+                        (this.props.constraints && this.props.dataset) &&
+                        <div>
                             <Button color="link" onClick={this.toggleConstraintsModal.bind(this)}
                                     className="btn-circle circle-button-svg-container mx-1"
-                                    title={'Show/edit entity filters'}>
+                                    title={'Show/edit entity constraints'}>
                                 <svg width="1em" height="1em" viewBox="0 0 16 16"
                                      className={this.numberOfConstraints() === 0 ? 'bi bi-funnel-fill unset' : 'bi bi-funnel-fill text-secondary'}
                                      fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -197,10 +197,10 @@ class EntityBox extends React.Component<any, any> {
                             </Modal>
                         </div>
                     }
+                    </div>
                     {this.numberOfConditions() > 0 &&
                         <div title={this.constraintSummary()} className={'d-inline-block text-muted constraints-number'}>&nbsp;{`(${this.numberOfConditions()})`}</div>
                     }
-                </div>
             </Col>
         );
     }

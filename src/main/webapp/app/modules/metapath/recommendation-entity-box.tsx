@@ -6,15 +6,15 @@ import './recommendation-entity-box.css';
 const RecommendationEntityBox = (props) => {
     if (props.emphasize) {
         return (
-            <Col xs={'auto'} className={'position-relative recommendation-entity-box px-1'}>
-                <Button className="text-nowrap emphasized" size="lg" onClick={props.onClick}
+            <Col xs={'auto'} className={'px-0 d-flex align-items-center'}>
+                <Button className="text-nowrap emphasized" onClick={props.onClick}
                         onMouseEnter={props.onMouseEnter} onMouseOut={props.onMouseOut}>{props.entity}</Button>
             </Col>
         );
     } else {
         return (
-            <Col xs={'auto'} className={'position-relative recommendation-entity-box px-1'}>
-                <Button className="text-nowrap" size="lg" disabled
+            <Col xs={'auto'} className={'px-0 d-flex align-items-center'}>
+                <Button className="text-nowrap" disabled
                         onMouseEnter={props.onMouseEnter} onMouseOut={props.onMouseOut}>{props.entity}</Button>
             </Col>
         );

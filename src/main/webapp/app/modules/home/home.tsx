@@ -1029,7 +1029,7 @@ export class Home extends React.Component<IHomeProps> {
                             <Col xs={12}>
                                 <Row>
                                     <Col xs={8}>
-                                        <h4>Query metapath</h4>
+                                        <h4>Query metapath(s)</h4>
                                     </Col>
                                     <Col xs={4} className={'text-right'}>
                                         {this.state.metapathStr &&
@@ -1040,6 +1040,7 @@ export class Home extends React.Component<IHomeProps> {
                                     </Col>
                                 </Row>
                                 {(this.props.schemas) &&
+                                <div>
                                 <MetapathPanel
                                     metapath={this.state.metapath}
                                     schema={this.props.schemas[datasetToUse]}
@@ -1058,7 +1059,8 @@ export class Home extends React.Component<IHomeProps> {
                                     handleRemoval={this.handleConstraintRemoval.bind(this)}
                                     handleSelectFieldChange={this.handleSelectFieldChange.bind(this)}
                                     handleMultipleAddition={this.handleMultipleConditionsAddition.bind(this)}
-                                    handlePredefinedMetapathAddition={this.setMetapath.bind(this)}/>
+                                    handlePredefinedMetapathAddition={this.setMetapath.bind(this)}/>                                   
+                                </div>
                                 }
                                 {this.checkMetapathDefined() &&
                                     <Row className={'justify-content-center mt-4'}>
