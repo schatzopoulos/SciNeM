@@ -89,7 +89,7 @@ class EntityBox extends React.Component<any, any> {
 
     render() {
         return (
-            <Col xs={'auto'} className="position-relative entity-box" style={{'padding': 0}}>
+            <Col xs={'auto'} className="entity-box" style={{'padding': 0}}>
                     <div className={'d-inline-block'}>
                     {
                         this.props.primaryEntity &&
@@ -97,7 +97,7 @@ class EntityBox extends React.Component<any, any> {
                             <Button color="link" onClick={this.toggleReferenceKeyModal.bind(this)}
                                     title={'Change entity identifier'+(this.props.selectField?`; ` + this.props.selectField + ' is currently selected.' : '')}
                                     className="btn-circle circle-button-svg-container mx-1">
-                                <svg width="1em" height="1em" viewBox="0 0 16 16"
+                                <svg width="1.2em" height="1.2em" viewBox="0 0 16 16"
                                      className={'bi bi-key-fill text-info'}
                                      fill={'currentColor'}
                                      xmlns="http://www.w3.org/2000/svg">
