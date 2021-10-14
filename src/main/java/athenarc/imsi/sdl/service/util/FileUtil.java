@@ -50,6 +50,10 @@ public final class FileUtil {
         return Constants.BASE_PATH + "/" + uuid + "/log.out";
     }
 
+    public static String getErrorLog(String uuid) {
+        return Constants.BASE_PATH + "/" + uuid + "/log.err";
+    }
+
     public static String getConfFile(String uuid) {
         return Constants.BASE_PATH + "/" + uuid + "/" + Constants.CONFIG_FILE;
     }

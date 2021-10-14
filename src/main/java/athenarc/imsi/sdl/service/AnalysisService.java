@@ -44,7 +44,7 @@ public class AnalysisService {
 
         // create folder to store results
         String outputDir = FileUtil.createDir(id);
-				String hdfsOutputDir = Constants.HDFS_BASE_PATH + "/" + id;
+        String hdfsOutputDir = Constants.HDFS_BASE_PATH + "/" + id;
         String outputLog = FileUtil.getLogfile(id);
 
         String config = FileUtil.writeConfig(analysis, outputDir, hdfsOutputDir, metapath, joinpath, constraints, constraintsExpression, primaryEntity, searchK, t,
@@ -87,9 +87,12 @@ public class AnalysisService {
 
         // redirect ouput to logfile
         File out = new File(outputLog);
+        File err = new File(FileUtil.getErrorLog(id));
+        
         pb.redirectOutput(out);
+        pb.redirectError(err);
 
-        // execute ranking script
+        // execute analysis script
         Process process = pb.start();
         int exitCode = process.waitFor();
 
