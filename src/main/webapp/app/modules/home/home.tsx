@@ -1040,7 +1040,6 @@ export class Home extends React.Component<IHomeProps> {
                                     </Col>
                                 </Row>
                                 {(this.props.schemas) &&
-                                <div>
                                 <MetapathPanel
                                     metapath={this.state.metapath}
                                     schema={this.props.schemas[datasetToUse]}
@@ -1060,7 +1059,6 @@ export class Home extends React.Component<IHomeProps> {
                                     handleSelectFieldChange={this.handleSelectFieldChange.bind(this)}
                                     handleMultipleAddition={this.handleMultipleConditionsAddition.bind(this)}
                                     handlePredefinedMetapathAddition={this.setMetapath.bind(this)}/>                                   
-                                </div>
                                 }
                                 {this.checkMetapathDefined() &&
                                     <Row className={'justify-content-center mt-4'}>

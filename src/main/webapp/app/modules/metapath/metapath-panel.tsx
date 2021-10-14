@@ -126,13 +126,15 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
             });
             return (
                 <Row>
-                    {metapathEntityBoxes}
-                    <MetapathControl schema={this.props.schema} metapath={this.props.metapath}
-                                     onNewEntity={this.props.onNewEntity} onDelete={this.props.onDelete} />
-                    <Recommendation
-                        recommendationEntities={recommendationList}
-                        idIndexedSchema={idIndexedSchema}
-                        onRecommendationAccept={this.props.onRecommendationAccept} />
+                    <div className="align-items-center col-12 d-flex">
+                        {metapathEntityBoxes}
+                        <MetapathControl schema={this.props.schema} metapath={this.props.metapath}
+                                        onNewEntity={this.props.onNewEntity} onDelete={this.props.onDelete} />
+                        <Recommendation
+                            recommendationEntities={recommendationList}
+                            idIndexedSchema={idIndexedSchema}
+                            onRecommendationAccept={this.props.onRecommendationAccept} />
+                    </div>
                 </Row>
             );
         } else if (this.nodes) {
