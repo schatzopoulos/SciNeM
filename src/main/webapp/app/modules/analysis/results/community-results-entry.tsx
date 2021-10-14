@@ -7,16 +7,6 @@ import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 
 import './community-results-entry.css';
 
-// const COMMUNITY_AGGREGATES = {
-//     'AVG': (docs, field) => {
-//         const sum = docs.reduce((totalSum, doc) => {
-//             const value = Number.parseFloat(doc[field]);
-//             return totalSum + value;
-//         });
-//         return sum / docs.length;
-//     }
-// };
-
 const average = (docs, field) => {
     const sum = docs.reduce((totalSum, doc) => {
         const value = Number.parseFloat(doc[field]);
