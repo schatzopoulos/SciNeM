@@ -73,12 +73,15 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                     return rearrangeHeaders(newHeaders,currentSelectField);
                 },this.props.headers)
                 :rearrangeHeaders(this.props.headers, this.props.selectField);
+
         // const tableHeaders = this.props.communityView? this.props.headers: rearrangeHeaders(this.props.headers,this.props.selectField);
         if (!this.props.communityView) {
             rows = this.props.docs.map((row, index) => {
-                const rowValues = this.props.headers.map(fieldName => {
+
+                const rowValues = tableHeaders.map(fieldName => {
                     return row[fieldName];
                 });
+
                 return (
                     <ResultEntry
                         key={'result-' + row.resultIndex}
