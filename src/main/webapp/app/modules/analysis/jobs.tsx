@@ -160,7 +160,7 @@ export class Jobs extends React.Component<IHomeProps> {
                                     <Row className="small-grey text-center">
                                         <Col>
                                             {this.getDescriptionString()}
-                                            {this.props.progress && this.props.progress<100?<Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon icon={faTimes}/> Cancel analysis</Button>:''}
+                                            {/* {this.props.progress && this.props.progress<100?<Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon icon={faTimes}/> Cancel analysis</Button>:''} */}
                                         </Col>
                                     </Row>
                                 }

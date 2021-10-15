@@ -19,16 +19,14 @@ import { IRootState } from 'app/shared/reducers';
 import { generateGroupsOfDisjunctions } from 'app/shared/util/constraint-utils';
 import CytoscapeComponent from 'react-cytoscapejs';
 import _ from 'lodash';
-import { analysisRun, getMoreResults, getResults, getStatus } from '../analysis/analysis.reducer';
-import { getDatasetSchemas } from '../datasets/datasets.reducer'
+import { analysisRun, getMoreResults, getResults, getStatus} from '../analysis/analysis.reducer';
 import { getMetapathDescription, ACTION_TYPES as metapathActions} from 'app/modules/metapath/metapath.reducer';
+import { getDatasetSchemas } from '../datasets/datasets.reducer'
 import ResultsPanel from '../analysis/results/results';
 import MetapathPanel from '../metapath/metapath-panel';
 import AutocompleteInput from '../datasets/autocomplete-input';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
-import FeedbackButton from './feedback';
+import { faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
 import ConfigurationModal from './configurationModal';
-import { throws } from 'assert';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -76,6 +74,7 @@ export class Home extends React.Component<IHomeProps> {
         commNumOfCommunities: 20, 
         commRatio: 0.6,
     };
+    _metapathPanelRef: any;
     cy: any;
     polling: any;
 
@@ -180,7 +179,6 @@ export class Home extends React.Component<IHomeProps> {
     registerMultipleNodes(nodeList) {
         const temporaryMetapath = [...this.state.metapath];
         const getMetapathStr = metapath => metapath.map(n => {
-            // console.log(n);
             return n.data('label').substr(0, 1);
         }).join('');
         let temporaryNeighborhood = this.state.neighbors;
@@ -620,82 +618,10 @@ export class Home extends React.Component<IHomeProps> {
         });
     }
 
-    checkMetapathDefined() {
-        return this.state.metapathStr.length > 0;
-    }
-
-    checkMetapathLength() {
-        const metapath = this.state.metapathStr;
-
-        return (metapath.length >= 3);
-    }
-
     getJoinPath() {
         const metapath = this.state.metapathStr.slice(0);
         const midPos = Math.floor(metapath.length / 2) + 1;
         return metapath.substr(0, midPos);
-    }
-
-    reverseString(str) {
-        const splitString = str.split('');
-        const reverseArray = splitString.reverse();
-        const joinArray = reverseArray.join('');
-        return joinArray;
-    }
-
-    checkSymmetricMetapath() {
-
-        let metapath = this.state.metapathStr.slice(0);
-
-        if (metapath.length < 3)
-            return false;
-
-        const midPos = Math.floor(metapath.length / 2);
-
-        // if metapath length is even, remove mid character
-        if (metapath.length % 2 !== 0) {
-            metapath = metapath.slice(0, midPos) + metapath.slice(midPos + 1);
-        }
-        ;
-
-        const firstHalf = metapath.substr(0, midPos);
-        const lastHalf = metapath.substr(midPos, metapath.length - 1);
-        // console.log("first " + firstHalf);
-        // console.log("last " + lastHalf);
-        return (firstHalf === this.reverseString(lastHalf));
-    }
-
-    checkConstraints() {
-        if (this.state.analysis === 'simjoin' || this.state.analysis === 'simsearch')
-            return true;
-
-        const constraints = {};
-        _.forOwn(this.state.constraints, (entityConstraint, entity) => {
-            const e = entity.substr(0, 1);
-            let entityConditions = [];
-
-            _.forOwn(entityConstraint, ({ enabled, type, conditions }, field) => {
-                if (enabled) {
-                    entityConditions = conditions
-                        .filter(element => element.value)
-                        .map(element => {
-                            let value;
-                            if (type === 'numeric') {
-                                value = parseInt(element.value, 10);
-                            } else {
-                                value = `'${element.value}'`;
-                            }
-                            return `${element.logicOp || ''} ${field} ${element.operation} ${value}`;
-                        });
-                }
-
-                if (entityConditions.length > 0) {
-                    constraints[e] = entityConditions.join(' ');
-                }
-            });
-        });
-
-        return !_.isEmpty(constraints);
     }
 
     getSchema() {
@@ -842,59 +768,9 @@ export class Home extends React.Component<IHomeProps> {
         }
     }
 
-    generateNotification() {
-        if (this.checkMetapathDefined()) {
-            if (this.checkMetapathLength()) {
-                if (this.checkSymmetricMetapath()) {
-                    if (this.checkConstraints()) {
-                        return <p className={'m-0'}><small className={'text-success'}>Valid metapath!</small></p>;
-                    }
-                    return <p className={'m-0'}><small className={'text-danger'}>At least one constraint must be
-                        defined</small></p>;
-                }
-                return <p className={'m-0'}><small className={'text-danger'}>Metapath must be symmetric</small></p>;
-            }
-            return <p className={'m-0'}><small className={'text-danger'}>Metapath must contain at least 3
-                entities</small></p>;
-        }
-        return <div></div>;
-    }
 
-    getCrudeInterpretation() {
-        if (this.checkSymmetricMetapath()) {
-            const targetEntity = this.state.metapath[0].data('label');
-            if (this.state.metapath.length === 3) {
-                const relatingEntity = this.state.metapath[1].data('label');
-                return <strong><small>Metapath will retrieve <strong>{targetEntity}</strong> entities, that are
-                    connected with
-                    one <strong>{relatingEntity}</strong> entity.</small></strong>;
-            } else {
-                const relatingMetapathElements = [];
-                this.state.metapath.map((entity, index) => {
-                    const entityLabel = entity.data('label');
-                    return <strong key={`${entityLabel}-${index}`}>{entityLabel}</strong>;
-                }).forEach((element, index) => {
-                    if (index > 0) {
-                        relatingMetapathElements.push(<span> <FontAwesomeIcon icon={'play'} /> </span>);
-                    }
-                    relatingMetapathElements.push(element);
-                });
-                return <strong><small>Metapath will retrieve <strong>{targetEntity}</strong> entities, that are
-                    connected with
-                    the metapath {relatingMetapathElements}.</small></strong>;
-            }
-        }
-        return <div></div>;
-    }
 
-    getInterpretation() {
-        if (this.props.metapathLoading === metapathActions.GET_METAPATH_DESCRIPTION) {
-            return <span className={'text-center'}><Spinner /></span>;
-        } else if (this.props.metapathInfo && this.props.metapathInfo.metapathDescription) {
-            return <strong><small>{this.props.metapathInfo.metapathDescription}</small></strong>;
-        }
-        return this.getCrudeInterpretation();
-    }
+
 
     setInterpretation(dataset, metapath, description) {
         this.setState({
@@ -962,15 +838,24 @@ export class Home extends React.Component<IHomeProps> {
         return (this.state.dataset === '') ? Object.keys(this.props.schemas)[0] : this.state.dataset;
     }
 
+    addMetapath() {
+        this.setState({
+            metapath: [ this.state.metapath[0]],
+            metapathStr: 'A',
+        });
+    }
+
     render() {
         const datasetOptions = this.getDatasetOptions();
         const schema = this.getSchema();
-        const validMetapathLength = this.checkMetapathLength();
-        const validMetapath = this.checkSymmetricMetapath();
-        const validConstraints = this.checkConstraints();
+        const validMetapath = true; // this._metapathPanelRef.checkSymmetricMetapath();
+        const validConstraints = true; // this._metapathPanelRef.checkConstraints();
         const validAnalysisType = this.state.analysis.length !== 0;
         const validTargetEntity = (!this.state.analysis.includes('Similarity Search') || (this.state.analysis.includes('Similarity Search') && this.state.targetEntity !== ''));
         const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
+console.warn(this.state.metapath);
+console.warn(this.state.metapathStr);
+
         let datasetToUse;
         if (this.props.schemas) {
             datasetToUse = this.getCurrentDataset();
@@ -995,9 +880,9 @@ export class Home extends React.Component<IHomeProps> {
 		</span>;
 
         return (
-            <Container fluid>
+            <Container>
                 <Row className={'justify-content-center'}>
-                    <Col md="6">
+                    <Col md="12">
                         <Row>
                             <Col md="12">
                                 <Row>
@@ -1007,7 +892,7 @@ export class Home extends React.Component<IHomeProps> {
                                     <Col md='4'>
                                         <Button outline color="info" tag={Link} to="/upload" className="float-right"
                                                 size='sm'>
-                                            <FontAwesomeIcon icon="upload" /> Upload new
+                                            <FontAwesomeIcon icon="upload" /> Upload
                                         </Button>
                                     </Col>
                                 </Row>
@@ -1023,246 +908,218 @@ export class Home extends React.Component<IHomeProps> {
                         <Card className="mx-auto">
                             {schema}
                         </Card>
+                    </Col>
+                </Row>  
+                
+                <Row className={'mt-4 mb-4'}>
+                    <Col md='6'>
+                        <h4>Select analysis type</h4>
+                    </Col>
+                    <Col md='6'>
+                        <Button outline size='sm' color="info" title="Advanced Options"
+                                className="float-right" active={this.state.configurationActive}
+                                onClick={this.toggleConfiguration.bind(this)}>
+                            <FontAwesomeIcon icon="cogs" /> Configuration
+                        </Button>
+                        <ConfigurationModal 
+                            isOpen={this.state.configurationActive}
+                            
+                            edgesThreshold={this.state.edgesThreshold}
+                            
+                            prAlpha={this.state.prAlpha}
+                            prTol={this.state.prTol}
+                            
+                            searchK={this.state.searchK}
+                            hashTables={this.state.hashTables}
+                            simMinValues={this.state.simMinValues}
+                            
+                            commAlgorithm={this.state.commAlgorithm}
+                            commMaxSteps={this.state.commMaxSteps}
+                            commStopCriterion={this.state.commStopCriterion}
+                            commThreshold={this.state.commThreshold}
+                            commNumOfCommunities={this.state.commNumOfCommunities}
+                            commRatio={this.state.commRatio}
 
-                        <br />
-                        <Row className={'mt-2'}>
-                            <Col xs={12}>
+                            toggleConfiguration={this.toggleConfiguration.bind(this)}
+                            handleAdvancedOptions={this.handleAdvancedOptions.bind(this)}
+                        />
+                    </Col>
+
+                    <Col md='6'>
+                        <Row>
+                            <Col>
+                                <CustomInput type="switch" id="rankingSwith"
+                                                onChange={() => this.onCheckboxBtnClick('Ranking')}
+                                                checked={this.state.analysis.includes('Ranking')}
+                                                label={rankingLabel} />
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                <CustomInput type="switch" id="simJoinSwitch"
+                                                onChange={() => this.onCheckboxBtnClick('Similarity Join')}
+                                                checked={this.state.analysis.includes('Similarity Join')}
+                                                label={simJoinLabel} />
+                            </Col>
+                        </Row>
+                    </Col>
+                    <Col md={'6'}>
+                        <Row>
+                            <Col>
+                                <CustomInput type="switch" id="cdSwitch"
+                                                onChange={() => this.onCheckboxBtnClick('Community Detection')}
+                                                checked={this.state.analysis.includes('Community Detection')}
+                                                label={communityLabel} />
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col xs={'12'}>
+                                <CustomInput type="switch" id="simSearchSwitch"
+                                                onChange={() => this.onCheckboxBtnClick('Similarity Search')}
+                                                checked={this.state.analysis.includes('Similarity Search')}
+                                                label={simSearchLabel} />
+                            </Col>
+                        </Row>
+                        {
+                            (this.state.analysis.includes('Similarity Search')) &&
+                            <Col xs={'12'}>
                                 <Row>
-                                    <Col xs={8}>
-                                        <h4>Query metapath(s)</h4>
-                                    </Col>
-                                    <Col xs={4} className={'text-right'}>
-                                        {this.state.metapathStr &&
-                                        <Button color={'danger'} onClick={this.clearMetapath.bind(this)}
-                                                size={'sm'}><FontAwesomeIcon
-                                            icon={faTimes} /> Clear
-                                            metapath</Button>}
-                                    </Col>
-                                </Row>
-                                {(this.props.schemas) &&
-                                <MetapathPanel
-                                    metapath={this.state.metapath}
-                                    schema={this.props.schemas[datasetToUse]}
-                                    dataset={datasetToUse}
-                                    constraints={this.state.constraints}
-                                    selectField={this.state.selectField}
-                                    selectFieldOptions={selectFieldOptions}
-                                    onNewEntity={this.simulateClickOnNode.bind(this)}
-                                    onRecommendationAccept={this.addMultiple.bind(this)}
-                                    onDelete={this.deleteLast.bind(this)}
-                                    handleSwitch={this.handleConstraintSwitch.bind(this)}
-                                    handleDropdown={this.handleConstraintOpDropdown.bind(this)}
-                                    handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
-                                    handleInput={this.handleConstraintInputChange.bind(this)}
-                                    handleAddition={this.handleConstraintAddition.bind(this)}
-                                    handleRemoval={this.handleConstraintRemoval.bind(this)}
-                                    handleSelectFieldChange={this.handleSelectFieldChange.bind(this)}
-                                    handleMultipleAddition={this.handleMultipleConditionsAddition.bind(this)}
-                                    handlePredefinedMetapathAddition={this.setMetapath.bind(this)}/>                                   
-                                }
-                                {this.checkMetapathDefined() &&
-                                    <Row className={'justify-content-center mt-4'}>
-                                        <Col md={'12'}>
-                                            <div className={'balloon bg-light-grey'}>
-                                                <div>
-                                                    {this.generateNotification()}
-                                                </div>
-                                                {this.checkSymmetricMetapath() &&
-                                                <div>
-                                                    <hr className={'m-0'} />
-                                                    <div>
-                                                        <p className={'m-0'}>
-                                                            {this.getInterpretation()}
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                    <Col xs={'10'} className={'px-0'}>
+                                        
+                                        <AutocompleteInput
+                                            id="targetEntityInput"
+                                            placeholder={_.isEmpty(this.state.metapath) ? 'First, select a metapath' : `Search for ${selectedEntity} entities`}
+                                            key={`similarity-search-field${this.state.metapath.length > 0 ? '-for-' + this.state.metapath[0].data('label') : ''}`}
+                                            onChange={(val, callback = () => {
+                                            }) => {
+                                                const selectedId = val.id;
+                                                if (this.state.targetEntity && this.state.targetEntity !== selectedId) {
+                                                    this.setState({
+                                                        typedTargetEntityValue: selectedId,
+                                                        targetEntity: ''
+                                                    }, callback);
+                                                } else {
+                                                    this.setState({
+                                                        typedTargetEntityValue: selectedId
+                                                    }, callback);
                                                 }
-                                            </div>
+                                            }}
+                                            hasValidValue={validTypedValue => {
+                                                this.setState({
+                                                    showTargetEntitySaveButton: !!validTypedValue && (validTypedValue.id !== this.state.targetEntity)
+                                                });
+                                            }}
+                                            entity={selectedEntity}
+                                            field={this.state.selectField}
+                                            dataset={datasetToUse}
+                                            disabled={_.isEmpty(this.state.metapath)}
+                                            size='sm'
+                                            index={0}
+                                            additionTriggerCallback={this.setTargetEntity.bind(this)}
+                                            uniqueValues={false}
+                                        />
+                                    </Col>
+                                    {this.state.showTargetEntitySaveButton &&
+                                    <Col xs={'2'} className={'pl-1'}>
+                                        <Button color={'info'} size={'sm'}
+                                                onClick={this.setTargetEntity.bind(this)}><FontAwesomeIcon
+                                            icon={'save'} /></Button>
+                                    </Col>
+                                    }
+                                </Row>
+                                {
+                                    (this.state.targetEntity === '') &&
+                                    <Row>
+                                        <Col xs={'12'} className={'px-0'}>
+                                        <span className="attribute-type text-danger">
+                                            {this.state.metapath.length > 0
+                                                ? this.state.typedTargetEntityValue
+                                                    ? this.state.showTargetEntitySaveButton
+                                                        ? 'The new value of the field must be saved.'
+                                                        : 'The value of the field must be a valid option from the ones provided.'
+                                                    : 'This field cannot be empty when Similarity Search is enabled.'
+                                                : 'Select an entity first'}
+                                        </span>
                                         </Col>
                                     </Row>
                                 }
                             </Col>
-                        </Row>
+                        }
+                        
+                        {
+                            (!validAnalysisType) &&
+                            <Col md={'6'} className="attribute-type text-danger">
+                                Please select at least one type of analysis.
+                            </Col>
+                        }
 
-
-                        {/* <MetapathControl metapath={this.state.metapath} onEntityRemove={this.deleteLast.bind(this)} neighbors={this.state.neighbors} /> */}
                     </Col>
                 </Row>
-                <Row className={'justify-content-center'}>
-                    <Col md="6">
-                        <br />
+                <hr/>
+                <Row className={'mt-4'}>
+                    <Col xs={12}>
                         <Row>
-                            <Col md="12">
-                                <Row>
-                                    <Col md='8'>
-                                        <h4>Select analysis type</h4>
-                                    </Col>
-                                    <Col md='4'>
-                                        <Button outline size='sm' color="info" title="Advanced Options"
-                                                className="float-right" active={this.state.configurationActive}
-                                                onClick={this.toggleConfiguration.bind(this)}>
-                                            <FontAwesomeIcon icon="cogs" /> Configuration
+                            <Col xs={6}>
+                                <h4>Query metapath(s)</h4>
+                            </Col>
+                            <Col xs={6} className={'text-right'}>
+                                {
+                                    this.state.metapathStr &&
+                                    <span>
+                                        <Button outline color="success" size='sm' style={{ marginRight: '10px'}} onClick={this.addMetapath.bind(this)}>
+                                            <FontAwesomeIcon icon={ faPlus } /> Add metapath
                                         </Button>
-                                        <ConfigurationModal 
-                                            isOpen={this.state.configurationActive}
-                                            
-                                            edgesThreshold={this.state.edgesThreshold}
-                                            
-                                            prAlpha={this.state.prAlpha}
-                                            prTol={this.state.prTol}
-                                            
-                                            searchK={this.state.searchK}
-                                            hashTables={this.state.hashTables}
-                                            simMinValues={this.state.simMinValues}
-                                            
-                                            commAlgorithm={this.state.commAlgorithm}
-                                            commMaxSteps={this.state.commMaxSteps}
-                                            commStopCriterion={this.state.commStopCriterion}
-                                            commThreshold={this.state.commThreshold}
-                                            commNumOfCommunities={this.state.commNumOfCommunities}
-                                            commRatio={this.state.commRatio}
-
-                                            toggleConfiguration={this.toggleConfiguration.bind(this)}
-                                            handleAdvancedOptions={this.handleAdvancedOptions.bind(this)}
-                                        />
-                                    </Col>
-                                </Row>
+                                        <Button outline color={'danger'} onClick={this.clearMetapath.bind(this)} size={'sm'}>
+                                            <FontAwesomeIcon icon={faTimes} /> Clear metapath
+                                        </Button>
+                                    </span>
+                                }
                             </Col>
                         </Row>
-                        <Row>
-                            <Col md='6'>
-                                <Row>
-                                    <Col>
-                                        <CustomInput type="switch" id="rankingSwith"
-                                                     onChange={() => this.onCheckboxBtnClick('Ranking')}
-                                                     checked={this.state.analysis.includes('Ranking')}
-                                                     label={rankingLabel} />
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col>
-                                        <CustomInput type="switch" id="simJoinSwitch"
-                                                     onChange={() => this.onCheckboxBtnClick('Similarity Join')}
-                                                     checked={this.state.analysis.includes('Similarity Join')}
-                                                     label={simJoinLabel} />
-                                    </Col>
-                                </Row>
-                            </Col>
-                            <Col md={'6'}>
-                                <Row>
-                                    <Col xs={'12'}>
-                                        <CustomInput type="switch" id="simSearchSwitch"
-                                                     onChange={() => this.onCheckboxBtnClick('Similarity Search')}
-                                                     checked={this.state.analysis.includes('Similarity Search')}
-                                                     label={simSearchLabel} />
-                                    </Col>
-                                </Row>
-                                {
-                                    (this.state.analysis.includes('Similarity Search')) &&
-                                    <Col xs={'12'}>
-                                        <Row>
-                                            <Col xs={'10'} className={'px-0'}>
-                                                
-                                                <AutocompleteInput
-                                                    id="targetEntityInput"
-                                                    placeholder={_.isEmpty(this.state.metapath) ? 'First, select a metapath' : `Search for ${selectedEntity} entities`}
-                                                    key={`similarity-search-field${this.state.metapath.length > 0 ? '-for-' + this.state.metapath[0].data('label') : ''}`}
-                                                    onChange={(val, callback = () => {
-                                                    }) => {
-                                                        const selectedId = val.id;
-                                                        if (this.state.targetEntity && this.state.targetEntity !== selectedId) {
-                                                            this.setState({
-                                                                typedTargetEntityValue: selectedId,
-                                                                targetEntity: ''
-                                                            }, callback);
-                                                        } else {
-                                                            this.setState({
-                                                                typedTargetEntityValue: selectedId
-                                                            }, callback);
-                                                        }
-                                                    }}
-                                                    hasValidValue={validTypedValue => {
-                                                        this.setState({
-                                                            showTargetEntitySaveButton: !!validTypedValue && (validTypedValue.id !== this.state.targetEntity)
-                                                        });
-                                                    }}
-                                                    entity={selectedEntity}
-                                                    field={this.state.selectField}
-                                                    dataset={datasetToUse}
-                                                    disabled={_.isEmpty(this.state.metapath)}
-                                                    size='sm'
-                                                    index={0}
-                                                    additionTriggerCallback={this.setTargetEntity.bind(this)}
-                                                    uniqueValues={false}
-                                                />
-                                            </Col>
-                                            {this.state.showTargetEntitySaveButton &&
-                                            <Col xs={'2'} className={'pl-1'}>
-                                                <Button color={'info'} size={'sm'}
-                                                        onClick={this.setTargetEntity.bind(this)}><FontAwesomeIcon
-                                                    icon={'save'} /></Button>
-                                            </Col>
-                                            }
-                                        </Row>
-                                        {
-                                            (this.state.targetEntity === '') &&
-                                            <Row>
-                                                <Col xs={'12'} className={'px-0'}>
-                                                <span className="attribute-type text-danger">
-                                                    {this.state.metapath.length > 0
-                                                        ? this.state.typedTargetEntityValue
-                                                            ? this.state.showTargetEntitySaveButton
-                                                                ? 'The new value of the field must be saved.'
-                                                                : 'The value of the field must be a valid option from the ones provided.'
-                                                            : 'This field cannot be empty when Similarity Search is enabled.'
-                                                        : 'Select an entity first'}
-                                                </span>
-                                                </Col>
-                                            </Row>
-                                        }
-                                    </Col>
-                                }
-                                <Row>
-                                    <Col>
-                                        <CustomInput type="switch" id="cdSwitch"
-                                                     onChange={() => this.onCheckboxBtnClick('Community Detection')}
-                                                     checked={this.state.analysis.includes('Community Detection')}
-                                                     label={communityLabel} />
-                                    </Col>
-                                </Row>
-                                {
-                                    (!validAnalysisType) &&
-                                    <Col md={'6'} className="attribute-type text-danger">
-                                        Please select at least one type of analysis.
-                                    </Col>
-                                }
-
-                            </Col>
-                        </Row>
+                        {(this.props.schemas) &&
+                        <MetapathPanel
+                            ref={ (r) => { this._metapathPanelRef = r }}
+                            metapath={this.state.metapath}
+                            metapathStr={this.state.metapathStr}
+                            schema={this.props.schemas[datasetToUse]}
+                            dataset={datasetToUse}
+                            analysis={this.state.analysis}
+                            constraints={this.state.constraints}
+                            selectField={this.state.selectField}
+                            selectFieldOptions={selectFieldOptions}
+                            onNewEntity={this.simulateClickOnNode.bind(this)}
+                            onRecommendationAccept={this.addMultiple.bind(this)}
+                            onDelete={this.deleteLast.bind(this)}
+                            handleSwitch={this.handleConstraintSwitch.bind(this)}
+                            handleDropdown={this.handleConstraintOpDropdown.bind(this)}
+                            handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
+                            handleInput={this.handleConstraintInputChange.bind(this)}
+                            handleAddition={this.handleConstraintAddition.bind(this)}
+                            handleRemoval={this.handleConstraintRemoval.bind(this)}
+                            handleSelectFieldChange={this.handleSelectFieldChange.bind(this)}
+                            handleMultipleAddition={this.handleMultipleConditionsAddition.bind(this)}
+                            handlePredefinedMetapathAddition={this.setMetapath.bind(this)}
+                            />                                   
+                        }
                     </Col>
                 </Row>
-                <Row>
-                    <Col md='12' style={{ paddingTop: '20px' }}>
-                        <Row>
-                            <Col md={{ size: 2, offset: 5 }}>
-                                <Button block color="success"
-                                        disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity}
-                                        onClick={this.execute.bind(this)}>
-                                    <FontAwesomeIcon icon="play" /> Execute analysis
-                                </Button>
-                            </Col>
-                        </Row>
+                <Row className={'mt-4'}>
+                    <Col md={{ size: 4, offset: 4 }}>
+                        <Button block color="success"
+                                disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity}
+                                onClick={this.execute.bind(this)}>
+                            <FontAwesomeIcon icon="play" /> Execute analysis
+                        </Button>
                     </Col>
                 </Row>
                 <Row>
                     <Col md='12'>
-                        <Container>
-                            {this.props.uuid &&
+                        {this.props.uuid &&
                             <Card className={'my-4 pt-0'}>
                                 <Row className={'justify-content-end'}>
-                                    <h5 className={'p-2'}><strong className={'text-muted'}>Analysis
-                                        ID: <Link to={`/jobs/${this.props.uuid}`}
-                                                  target="_blank">{this.props.uuid}</Link></strong></h5>
+                                    <h6 className={'p-2'}><strong className={'text-muted'}>Analysis
+                                        id: <Link to={`/jobs/${this.props.uuid}`}
+                                                  target="_blank">{this.props.uuid}</Link></strong></h6>
                                 </Row>
                                 {this.props.error &&
                                 <Row>
@@ -1282,9 +1139,9 @@ export class Home extends React.Component<IHomeProps> {
                                     <Row className="small-grey text-center">
                                         <Col>
                                             {this.getDescriptionString()}
-                                            {this.props.progress && this.props.progress < 100 ?
+                                            {/* {this.props.progress && this.props.progress < 100 ?
                                                 <Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon
-                                                    icon={faTimes} /> Cancel analysis</Button> : ''}
+                                                    icon={faTimes} /> Cancel analysis</Button> : ''} */}
                                         </Col>
                                     </Row>
                                 }
@@ -1303,7 +1160,6 @@ export class Home extends React.Component<IHomeProps> {
                                 />
                             </Card>
                             }
-                        </Container>
                     </Col>
                 </Row>
             </Container>
@@ -1323,14 +1179,10 @@ const mapStateToProps = (storeState: IRootState) => ({
     uuid: storeState.analysis.uuid,
     analysis: storeState.analysis.analysis,
     schemas: storeState.datasets.schemas,
-    metapathInfo: storeState.metapath.metapathInfo,
-    metapathLoading: storeState.metapath.loading
 });
 
 const mapDispatchToProps = {
     analysisRun,
-    // simjoinRun,
-    // simsearchRun,
     getStatus,
     getResults,
     getMoreResults,
