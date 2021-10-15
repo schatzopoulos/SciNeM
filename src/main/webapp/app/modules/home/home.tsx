@@ -27,6 +27,8 @@ import MetapathPanel from '../metapath/metapath-panel';
 import AutocompleteInput from '../datasets/autocomplete-input';
 import { faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
 import ConfigurationModal from './configurationModal';
+import { throws } from 'assert';
+import { metapathToString } from '../../shared/util/metapath-utils';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -40,20 +42,20 @@ export interface IHomeProps extends StateProps, DispatchProps {
 
 export class Home extends React.Component<IHomeProps> {
     readonly state: any = {
-        metapath: [],
-        metapathStr: '',
-        metapathTab: 'metapath-constructor',
+        queries: [ ],
+        currentQueryIdx: 0,
+
         neighbors: undefined,
-        constraints: {},
+
         analysis: ['Ranking'],
         dataset: '',
         selectField: '',
 
         typedTargetEntityValue: '',
-        showTargetEntitySaveButton: false,
         targetEntity: '',
 
         configurationActive: false,
+        showTargetEntitySaveButton: false,
 
         edgesThreshold: 5,
 
@@ -78,7 +80,25 @@ export class Home extends React.Component<IHomeProps> {
     cy: any;
     polling: any;
 
-    pollMetapathDescription = null;
+    getCurrentQuery() {
+        return this.state.queries[this.state.currentQueryIdx] || [];
+    }
+
+    getCurrentMetapath() {
+        return this.getCurrentQuery()['metapath'] || [];
+    }
+
+    getCurrentConstraints() {
+        return this.getCurrentQuery()['constraints'] || {};
+    }
+
+    getPrimaryEntity() {
+        return this.getCurrentMetapath()[0].data('label');
+    }
+
+    getMetapathEntityLabels() {
+        return this.getCurrentMetapath().map(e => e.data('label'));
+    }
 
     validMove(node) {
         // allow first move to be anywhere
@@ -171,23 +191,18 @@ export class Home extends React.Component<IHomeProps> {
     }
 
     tapNode(e) {
-
         const node = e.target;
         this.registerNode(node);
     }
 
     registerMultipleNodes(nodeList) {
-        const temporaryMetapath = [...this.state.metapath];
-        const getMetapathStr = metapath => metapath.map(n => {
-            return n.data('label').substr(0, 1);
-        }).join('');
+        const metapath = [...this.getCurrentMetapath()];
+
         let temporaryNeighborhood = this.state.neighbors;
-        let temporaryMetapathStr = getMetapathStr(temporaryMetapath);
+
         nodeList.forEach(node => {
             if ((!temporaryNeighborhood) || (temporaryNeighborhood.contains(node))) {
-                temporaryMetapath.push(node);
-                temporaryMetapathStr = getMetapathStr(temporaryMetapath);
-
+                metapath.push(node);
                 temporaryNeighborhood = node.neighborhood();
             } else {
                 alert('Invalid selection of metapath nodes');
@@ -198,7 +213,7 @@ export class Home extends React.Component<IHomeProps> {
         // At this point all node additions are valid
         // temporaryMetapath contains the updated metapath structure
         // temporaryMetapathStr contains the updated metapath
-        const constraints = { ...this.state.constraints };
+        const constraints = { ...this.getCurrentConstraints() };
         nodeList.forEach(node => {
             _.forOwn(node.data('attributes'), (value) => {
                 const entity = node.data('label');
@@ -217,40 +232,38 @@ export class Home extends React.Component<IHomeProps> {
         const lastNode = nodeList[nodeList.length - 1];
 
         const newState = { ...this.state };
-        newState.metapath = temporaryMetapath;
-        newState.metapathStr = temporaryMetapathStr;
-        newState.constraints = constraints;
+        newState.queries[this.state.currentQueryIdx] = { metapath, constraints };
 
         if (this.state.selectField === '') {
             newState.selectField = lastNode.data('attributes').filter((attr) => attr.name !== 'id')[0].name;
         }
 
         this.setState(newState, () => {
-            if (this.state.metapath.length>2) {
+            if (metapath.length > 2) {
                 this.props.getMetapathDescription(
                     this.getCurrentDataset(),
-                    this.state.metapath.map(metapathCytoscapeNode=>metapathCytoscapeNode.data('label'))
+                    this.getMetapathEntityLabels()
                 );
             }
             this.animateNeighbors(lastNode);
         });
     }
 
-    registerNode(node) {
+    // TODO: seems to have duplicate code registerMultipleNodes
+    registerNode(node, checkValid=true) {
 
-        if (!this.validMove(node)) {
+        if (!this.validMove(node) && checkValid) {
             alert('This selection is not allowed, please select on of the nodes denoted with green color');
             return;
         }
 
-        // set metapath
-        const metapath = [...this.state.metapath];	// copy array
+        // update metapath
+        const metapath = [ ...this.getCurrentMetapath() ];
         metapath.push(node);
-        const metapathStr = metapath.map(n => n.data('label').substr(0, 1)).join('');
 
         // set constraints
-        const constraints = { ...this.state.constraints };
-        // const attrs = node.data('attributes').filter(n => (n.name !== 'id'));
+        const constraints = { ...this.getCurrentConstraints() };
+
         _.forOwn(node.data('attributes'), (value) => {
             const entity = node.data('label');
             const field = value.name;
@@ -265,9 +278,7 @@ export class Home extends React.Component<IHomeProps> {
         });
 
         const newState = { ...this.state };
-        newState.metapath = metapath;
-        newState.metapathStr = metapathStr;
-        newState.constraints = constraints;
+        newState.queries[this.state.currentQueryIdx] = { metapath, constraints };
 
         // select first attribute from the options
         if (this.state.selectField === '') {
@@ -275,14 +286,14 @@ export class Home extends React.Component<IHomeProps> {
         }
 
         this.setState(newState, () => {
-            if (this.state.metapath.length>2) {
+            if (metapath.length > 2) {
                 this.props.getMetapathDescription(
-                    this.getCurrentDataset(), 
-                    this.state.metapath.map(metapathCytoscapeNode => metapathCytoscapeNode.data('label')));
+                    this.getCurrentDataset(),
+                    this.getMetapathEntityLabels()
+                );
             }
             this.animateNeighbors(node);
         });
-
     }
 
     addMultiple(idList) {
@@ -320,15 +331,15 @@ export class Home extends React.Component<IHomeProps> {
      */
     deleteLast() {
 
-        const metapath = [...this.state.metapath];	// copy array
+        const metapath = [ ...this.getCurrentMetapath() ];
         metapath.pop();
-        const metapathStr = metapath.map(n => n.data('label').substr(0, 1)).join('');
+        const lastNode = metapath[metapath.length - 1];
 
-        const node = metapath[metapath.length - 1];
+        const metapathStr = metapathToString(metapath);
 
         // keep constraints for nodes that are in the metapath
         const constraints = {};
-        _.forOwn(this.state.constraints, (entityConstraint, entity) => {
+        _.forOwn(this.getCurrentConstraints(), (entityConstraint, entity) => {
             const e = entity.substr(0, 1);
             if (metapathStr.includes(e)) {
                 constraints[entity] = entityConstraint;
@@ -336,9 +347,7 @@ export class Home extends React.Component<IHomeProps> {
         });
 
         const newState = { ...this.state };
-        newState.metapath = metapath;
-        newState.metapathStr = metapathStr;
-        newState.constraints = constraints;
+        newState.queries[this.state.currentQueryIdx] = { metapath, constraints };
 
         // clear select field when metapath is deleted
         if (metapath.length === 0) {
@@ -349,7 +358,7 @@ export class Home extends React.Component<IHomeProps> {
         }
 
         this.setState(newState, () => {
-            this.animateNeighbors(node);
+            this.animateNeighbors(lastNode);
         });
     }
 
@@ -383,7 +392,7 @@ export class Home extends React.Component<IHomeProps> {
     }
 
     handleConstraintOpDropdown({ entity, field, index }, value) {
-        const constraints = { ...this.state.constraints };
+        const constraints = { ...this.getCurrentConstraints() };
         const found = constraints[entity][field]['conditions'].find(c => c.index === index);
         if (found) {
             found['operation'] = value;
@@ -395,12 +404,12 @@ export class Home extends React.Component<IHomeProps> {
     }
 
     getSelectFieldOptions() {
-        if (this.state.metapath.length === 0) {
+        if (this.getCurrentMetapath().length === 0) {
             return { selectedEntity: '', selectFieldOptions: [] };
         }
 
         const selectFieldOptions = [];
-        const firstNode = this.state.metapath[0];
+        const firstNode = this.getCurrentMetapath()[0];
 
         const selectedEntity = firstNode.data('label');
         _.forOwn(firstNode.data('attributes'), (value, key) => {
@@ -415,7 +424,7 @@ export class Home extends React.Component<IHomeProps> {
     }
 
     handleConstraintLogicOpDropdown({ entity, field, index }, value) {
-        const constraints = { ...this.state.constraints };
+        const constraints = { ...this.getCurrentConstraints() };
         const found = constraints[entity][field]['conditions'].find(c => c.index === index);
         if (found) {
             found['logicOp'] = value;
@@ -428,7 +437,7 @@ export class Home extends React.Component<IHomeProps> {
 
     handleConstraintInputChange({ entity, field, index }, value) {
 
-        const constraints = { ...this.state.constraints };
+        const constraints = { ...this.getCurrentConstraints() };
 
         const found = constraints[entity][field]['conditions'].find(c => c.index === index);
         if (found) {
@@ -441,7 +450,7 @@ export class Home extends React.Component<IHomeProps> {
     }
 
     handleMultipleConditionsAddition({ entity, field }, conditionsList) {
-        const constraints = { ...this.state.constraints };
+        const constraints = { ...this.getCurrentConstraints() };
 
         conditionsList.forEach(condition => {
             this.checkAndCreateConstraints(constraints, {
@@ -455,18 +464,14 @@ export class Home extends React.Component<IHomeProps> {
     }
 
     handleConstraintAddition({ entity, field }, logicOp, conditionOp, value) {
-        const constraints = { ...this.state.constraints };
+        const constraints = { ...this.getCurrentConstraints() };
 
         this.checkAndCreateConstraints(constraints, { entity, field }, null, logicOp, conditionOp, value);
-        this.setState({
-            constraints
-        }, () => {
-            // console.warn(this.state.constraints);
-        });
+        this.setState({ constraints });
     }
 
     handleConstraintRemoval({ entity, field, index }) {
-        const constraints = { ...this.state.constraints };
+        const constraints = { ...this.getCurrentConstraints() };
 
         // constraints[entity][field]['conditions'] = constraints[entity][field]['conditions'].filter(n => n.index !== index);
         const newConditions = [];
@@ -488,25 +493,105 @@ export class Home extends React.Component<IHomeProps> {
         });
     }
 
+    getConstraintsExpression() {
+        const constaintDescriptions = {};
+        Object.keys(this.getCurrentConstraints()).forEach((entity, index) => {
+            constaintDescriptions[entity] = generateGroupsOfDisjunctions(this.getCurrentConstraints(), `${entity}.`);
+        });
+        return this.constraintsSummary(constaintDescriptions);
+    }
+
+    clearCurrentMetapath() {
+        const newState = { ... this.state };
+
+        // if we already have a submitted query, then clear query until first entity
+        if (this.state.queries.length > 1) {
+
+            const firstEntity = this.getCurrentMetapath()[0];
+
+            newState.queries[this.state.currentQueryIdx] = {
+                metapath: [],
+                constraints: {}
+            };
+
+            this.setState(newState, () => {
+
+                // set first entity to be the same for all metapaths
+                this.registerNode(firstEntity, false);
+            });
+
+        // we have only one query metapath
+        } else {
+            this.setState({
+                queries: [], 
+                currentQueryIdx: 0,
+            }, () => {
+                this.animateNeighbors(undefined);
+            });
+        }
+
+        
+    }
+
+    addNewMetapath() {
+        const newState = { ... this.state };
+        
+        // add an empty metapath
+        newState.queries.push({
+            metapath: [],
+            constraints: {}
+        });
+
+        // increment query index
+        newState.currentQueryIdx = this.state.currentQueryIdx + 1;
+
+        const firstEntity = this.getCurrentMetapath()[0];
+
+        this.setState(newState, () => {
+
+            // set first entity to be the same for all metapaths
+            this.registerNode(firstEntity, false);
+        });
+    }
+
+    changeCurrentMetapath(currentQueryIdx) {
+        this.setState({ currentQueryIdx }, () => {
+            const metapath = this.getCurrentMetapath();
+            const lastEntity = metapath[metapath.length - 1];
+            this.animateNeighbors(lastEntity);
+        });
+    }
+
+    deleteSelectedMetapath(idx, e) {
+        e.stopPropagation();
+
+        const queries = this.state.queries.filter( (q, i) => i !== idx);
+        let currentQueryIdx = this.state.currentQueryIdx;
+        if (currentQueryIdx && queries.length - 1 < currentQueryIdx) {
+            currentQueryIdx -= 1;
+        }
+        console.warn({ queries, currentQueryIdx});
+
+        this.setState({ 
+            queries, currentQueryIdx
+        }, () => {
+            const metapath = this.getCurrentMetapath();
+            const lastEntity = metapath[metapath.length - 1];
+            this.animateNeighbors(lastEntity);
+        });
+    }
+
     execute(e, rerunAnalysis) {
 
         const analysisType = (rerunAnalysis) ? rerunAnalysis : this.state.analysis;
 
-        const constaintDescriptions = {};
-        Object.keys(this.state.constraints).forEach((entity, index) => {
-            constaintDescriptions[entity] = generateGroupsOfDisjunctions(this.state.constraints[entity], `${entity}.`);
-        });
-        const constraintsExpression = this.constraintsSummary(constaintDescriptions);
-
-        const primaryEntity = this.state.metapath[0].data('label');
-
         this.props.analysisRun(
             analysisType,
-            this.state.metapathStr,
+            metapathToString(this.getCurrentMetapath()),
             this.getJoinPath(),
-            this.state.constraints,
-            constraintsExpression,
-            primaryEntity,
+            this.getCurrentConstraints(),
+            this.getConstraintsExpression(),
+            this.getPrimaryEntity(),
             this.getCurrentDataset(),
             this.state.selectField,
             this.state.targetEntity,
@@ -527,51 +612,51 @@ export class Home extends React.Component<IHomeProps> {
         );
     }
 
-    runExample(e) {
+    // runExample(e) {
 
-        const newState = { ...this.state };
+    //     const newState = { ...this.state };
 
-        const nodes = this.cy.filter('node');
+    //     const nodes = this.cy.filter('node');
 
-        switch (this.state.analysis) {
-            case 'ranking': {
-                const node = nodes.select('label=MiRNA');
+    //     switch (this.state.analysis) {
+    //         case 'ranking': {
+    //             const node = nodes.select('label=MiRNA');
 
-                newState.dataset = 'Bio';
-                newState.metapathStr = 'MGDGM';
-                newState.selectField = 'name';
-                newState.constraints = {
-                    'Disease': {
-                        'name': {
-                            'nextIndex': 1,
-                            'enabled': true,
-                            'type': 'string',
-                            'conditions': [{ 'index': 0, 'value': 'Adenocarcinoma', 'operation': '=' }]
-                        }
-                    }
-                };
-                break;
-            }
-            case 'simjoin':
-                newState.dataset = 'DBLP';
-                newState.metapathStr = 'VPTPV';
-                newState.selectField = 'name';
-                break;
-            case 'simsearch':
-                newState.dataset = 'DBLP';
-                newState.metapathStr = 'VPAPV';
-                newState.selectField = 'name';
-                newState.targetEntity = 360;
-                break;
-            default:
-                alert('This type of analysis will be implemented soon');
-        }
+    //             newState.dataset = 'Bio';
+    //             newState.metapathStr = 'MGDGM';
+    //             newState.selectField = 'name';
+    //             newState.constraints = {
+    //                 'Disease': {
+    //                     'name': {
+    //                         'nextIndex': 1,
+    //                         'enabled': true,
+    //                         'type': 'string',
+    //                         'conditions': [{ 'index': 0, 'value': 'Adenocarcinoma', 'operation': '=' }]
+    //                     }
+    //                 }
+    //             };
+    //             break;
+    //         }
+    //         case 'simjoin':
+    //             newState.dataset = 'DBLP';
+    //             newState.metapathStr = 'VPTPV';
+    //             newState.selectField = 'name';
+    //             break;
+    //         case 'simsearch':
+    //             newState.dataset = 'DBLP';
+    //             newState.metapathStr = 'VPAPV';
+    //             newState.selectField = 'name';
+    //             newState.targetEntity = 360;
+    //             break;
+    //         default:
+    //             alert('This type of analysis will be implemented soon');
+    //     }
 
-        this.setState(newState, () => {
-            this.changeSchema();
-            this.execute(e, null);
-        });
-    }
+    //     this.setState(newState, () => {
+    //         this.changeSchema();
+    //         this.execute(e, null);
+    //     });
+    // }
 
     loadMoreResults(analysis, nextPage) {
         this.props.getMoreResults(analysis, this.props.uuid, nextPage);
@@ -603,7 +688,7 @@ export class Home extends React.Component<IHomeProps> {
 
     handleConstraintSwitch({ entity, field }) {
         // create object for entity, if not present
-        const constraints = { ...this.state.constraints };
+        const constraints = { ...this.getCurrentConstraints() };
 
         constraints[entity][field]['enabled'] = !constraints[entity][field]['enabled'];
 
@@ -619,7 +704,7 @@ export class Home extends React.Component<IHomeProps> {
     }
 
     getJoinPath() {
-        const metapath = this.state.metapathStr.slice(0);
+        const metapath = metapathToString(this.getCurrentMetapath());
         const midPos = Math.floor(metapath.length / 2) + 1;
         return metapath.substr(0, midPos);
     }
@@ -670,7 +755,6 @@ export class Home extends React.Component<IHomeProps> {
         });
         newLayout.run();
         this.cy.center();
-
     }
 
     resetSchemaColors() {
@@ -685,10 +769,9 @@ export class Home extends React.Component<IHomeProps> {
         e.preventDefault();
 
         const newState = { ...this.state };
-        newState.metapath = [];
-        newState.metapathStr = '';
+        newState.queries = [];
+        newState.currentQueryIdx = 0;
         newState.neighbors = undefined;
-        newState.constraints = {};
         newState.selectField = '';
         newState.targetEntity = '';
         newState.typedTargetEntityValue = '';
@@ -745,8 +828,8 @@ export class Home extends React.Component<IHomeProps> {
             const metapath = this.props.analysesParameters.metapath;
             const analyses = this.props.analysesParameters.analyses.join(', ');
             const constaintDescriptions = {};
-            Object.keys(this.state.constraints).forEach((entity, index) => {
-                constaintDescriptions[entity] = generateGroupsOfDisjunctions(this.state.constraints[entity], `${entity}.`);
+            Object.keys(this.getCurrentConstraints()).forEach((entity, index) => {
+                constaintDescriptions[entity] = generateGroupsOfDisjunctions(this.getCurrentConstraints()[entity], `${entity}.`);
             });
             const constraints = this.constraintsSummary(constaintDescriptions);
 
@@ -767,10 +850,6 @@ export class Home extends React.Component<IHomeProps> {
             return '';
         }
     }
-
-
-
-
 
     setInterpretation(dataset, metapath, description) {
         this.setState({
@@ -796,7 +875,6 @@ export class Home extends React.Component<IHomeProps> {
                     } else {
                         return disjunction[0].field + disjunction[0].condition;
                     }
-
                 });
                 return disjunctionExpressions.join(' or ');
             });
@@ -805,11 +883,12 @@ export class Home extends React.Component<IHomeProps> {
         return constraintExpressions.filter(expression => !!expression).join(', ');
     }
 
-    clearMetapath() {
+    clearAllMetapaths() {
         const newState = {
-            constraints: {},
-            metapathStr: '',
-            metapath: [],
+            queries: [{
+                metapath: [],
+                constraints: {}
+            }],
             selectField: '',
             typedTargetEntityValue: '',
             targetEntity: '',
@@ -838,13 +917,6 @@ export class Home extends React.Component<IHomeProps> {
         return (this.state.dataset === '') ? Object.keys(this.props.schemas)[0] : this.state.dataset;
     }
 
-    addMetapath() {
-        this.setState({
-            metapath: [ this.state.metapath[0]],
-            metapathStr: 'A',
-        });
-    }
-
     render() {
         const datasetOptions = this.getDatasetOptions();
         const schema = this.getSchema();
@@ -853,8 +925,7 @@ export class Home extends React.Component<IHomeProps> {
         const validAnalysisType = this.state.analysis.length !== 0;
         const validTargetEntity = (!this.state.analysis.includes('Similarity Search') || (this.state.analysis.includes('Similarity Search') && this.state.targetEntity !== ''));
         const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
-console.warn(this.state.metapath);
-console.warn(this.state.metapathStr);
+console.warn(this.state.queries);
 
         let datasetToUse;
         if (this.props.schemas) {
@@ -988,8 +1059,8 @@ console.warn(this.state.metapathStr);
                                         
                                         <AutocompleteInput
                                             id="targetEntityInput"
-                                            placeholder={_.isEmpty(this.state.metapath) ? 'First, select a metapath' : `Search for ${selectedEntity} entities`}
-                                            key={`similarity-search-field${this.state.metapath.length > 0 ? '-for-' + this.state.metapath[0].data('label') : ''}`}
+                                            placeholder={_.isEmpty(this.getCurrentMetapath()) ? 'First, select a metapath' : `Search for ${selectedEntity} entities`}
+                                            key={`similarity-search-field${this.getCurrentMetapath().length > 0 ? '-for-' + this.getPrimaryEntity() : ''}`}
                                             onChange={(val, callback = () => {
                                             }) => {
                                                 const selectedId = val.id;
@@ -1012,7 +1083,7 @@ console.warn(this.state.metapathStr);
                                             entity={selectedEntity}
                                             field={this.state.selectField}
                                             dataset={datasetToUse}
-                                            disabled={_.isEmpty(this.state.metapath)}
+                                            disabled={_.isEmpty(this.getCurrentMetapath())}
                                             size='sm'
                                             index={0}
                                             additionTriggerCallback={this.setTargetEntity.bind(this)}
@@ -1032,7 +1103,7 @@ console.warn(this.state.metapathStr);
                                     <Row>
                                         <Col xs={'12'} className={'px-0'}>
                                         <span className="attribute-type text-danger">
-                                            {this.state.metapath.length > 0
+                                            {this.getCurrentMetapath().length > 0
                                                 ? this.state.typedTargetEntityValue
                                                     ? this.state.showTargetEntitySaveButton
                                                         ? 'The new value of the field must be saved.'
@@ -1064,13 +1135,10 @@ console.warn(this.state.metapathStr);
                             </Col>
                             <Col xs={6} className={'text-right'}>
                                 {
-                                    this.state.metapathStr &&
+                                    !_.isEmpty(this.getCurrentMetapath()) &&
                                     <span>
-                                        <Button outline color="success" size='sm' style={{ marginRight: '10px'}} onClick={this.addMetapath.bind(this)}>
-                                            <FontAwesomeIcon icon={ faPlus } /> Add metapath
-                                        </Button>
-                                        <Button outline color={'danger'} onClick={this.clearMetapath.bind(this)} size={'sm'}>
-                                            <FontAwesomeIcon icon={faTimes} /> Clear metapath
+                                        <Button color={'danger'} onClick={this.clearAllMetapaths.bind(this)} size={'sm'} title="Delete all metapaths">
+                                            <FontAwesomeIcon icon={faTimes} /> Clear all
                                         </Button>
                                     </span>
                                 }
@@ -1079,12 +1147,13 @@ console.warn(this.state.metapathStr);
                         {(this.props.schemas) &&
                         <MetapathPanel
                             ref={ (r) => { this._metapathPanelRef = r }}
-                            metapath={this.state.metapath}
-                            metapathStr={this.state.metapathStr}
+                            metapath={this.getCurrentMetapath()}
+                            queries={this.state.queries}
+                            currentQueryIdx={this.state.currentQueryIdx}
                             schema={this.props.schemas[datasetToUse]}
                             dataset={datasetToUse}
                             analysis={this.state.analysis}
-                            constraints={this.state.constraints}
+                            constraints={this.getCurrentConstraints()}
                             selectField={this.state.selectField}
                             selectFieldOptions={selectFieldOptions}
                             onNewEntity={this.simulateClickOnNode.bind(this)}
@@ -1095,10 +1164,14 @@ console.warn(this.state.metapathStr);
                             handleLogicDropdown={this.handleConstraintLogicOpDropdown.bind(this)}
                             handleInput={this.handleConstraintInputChange.bind(this)}
                             handleAddition={this.handleConstraintAddition.bind(this)}
+                            handleNewMetapath={this.addNewMetapath.bind(this)}
                             handleRemoval={this.handleConstraintRemoval.bind(this)}
+                            handleClear={this.clearCurrentMetapath.bind(this)}
                             handleSelectFieldChange={this.handleSelectFieldChange.bind(this)}
                             handleMultipleAddition={this.handleMultipleConditionsAddition.bind(this)}
                             handlePredefinedMetapathAddition={this.setMetapath.bind(this)}
+                            handleMetapathSelection={this.changeCurrentMetapath.bind(this)}
+                            handleMetapathDeletetion={this.deleteSelectedMetapath.bind(this)}
                             />                                   
                         }
                     </Col>

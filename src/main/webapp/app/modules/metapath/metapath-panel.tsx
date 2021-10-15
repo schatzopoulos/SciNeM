@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Row, Col, Modal, ModalHeader, ModalBody, Spinner } from 'reactstrap';
+import { Button, Row, Col, Modal, ModalHeader, ModalBody, Spinner, ListGroup, ListGroupItem } from 'reactstrap';
 import EntityBox from './entity-box';
 import EntityConnector from './entity-connector';
 import EntityInsertionModal from './entity-insertion-modal';
@@ -7,17 +7,21 @@ import MetapathControl from './metapath-control';
 import Recommendation from 'app/modules/metapath/recommendation';
 import PredefinedMetapathBrowser from 'app/modules/metapath/predefined-metapath-browser';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faExclamationCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import { IRootState } from 'app/shared/reducers';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import { ACTION_TYPES as metapathActions} from 'app/modules/metapath/metapath.reducer';
+import { faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { metapathToString } from '../../shared/util/metapath-utils';
+
 
 interface MetapathPanelProps {
     constraints: any,
     dataset: string,
     metapath: any,
-    metapathStr: any,
+    queries: any,
+    currentQueryIdx: number,
     analysis: any,
     schema: any,
     selectField: string,
@@ -33,9 +37,13 @@ interface MetapathPanelProps {
     handleInput: any,
     handleAddition: any,
     handleRemoval: any,
+    handleClear: any,
+    handleNewMetapath: any,
     handleSelectFieldChange: any,
     handleMultipleAddition: any,
     handlePredefinedMetapathAddition: any,
+    handleMetapathSelection: any,
+    handleMetapathDeletetion: any,
 }
 
 class MetapathPanel extends React.Component<MetapathPanelProps> {
@@ -90,15 +98,18 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
         )
     }
 
-    isMetapathValid() {
-        return this.checkMetapathDefined() && this.checkMetapathLength() && this.checkSymmetricMetapath() && this.checkConstraints();
+    isMetapathValid(metapath, constraints) {
+        const metapathStr = metapathToString(metapath);
+        return this.checkMetapathDefined(metapathStr) && this.checkMetapathLength(metapathStr) && this.checkSymmetricMetapath(metapathStr) && this.checkConstraints(constraints);
     }
 
-    generateNotification() {
-        if (this.checkMetapathDefined()) {
-            if (this.checkMetapathLength()) {
-                if (this.checkSymmetricMetapath()) {
-                    if (this.checkConstraints()) {
+    generateNotification(metapath, constraints) {
+        const metapathStr = metapathToString(metapath);
+
+        if (this.checkMetapathDefined(metapathStr)) {
+            if (this.checkMetapathLength(metapathStr)) {
+                if (this.checkSymmetricMetapath(metapathStr)) {
+                    if (this.checkConstraints(constraints)) {
                         return "Valid metapath!";
                     }
                     return" At least one constraint must be defined";
@@ -109,17 +120,17 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
         }
     }
 
-    checkMetapathDefined() {
-        return this.props.metapathStr.length > 0;
+    checkMetapathDefined(metapathStr) {
+        return metapathStr.length > 0;
     }
 
-    checkMetapathLength() {
-        return (this.props.metapathStr.length >= 3);
+    checkMetapathLength(metapathStr) {
+        return (metapathStr.length >= 3);
     }
 
-    checkSymmetricMetapath() {
+    checkSymmetricMetapath(metapathStr) {
 
-        let metapath = this.props.metapathStr.slice(0);
+        let metapath = metapathStr.slice(0);
 
         if (metapath.length < 3)
             return false;
@@ -145,29 +156,29 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
         return joinArray;
     }
 
-    getCrudeInterpretation() {
-        if (this.checkSymmetricMetapath()) {
+    getMetapathString(metapath) {
+        return metapath.map((entity, index) => { return entity.data('label'); }).join("-");
+    }
+
+    getCrudeInterpretation(metapathStr) {
+        if (this.checkSymmetricMetapath(metapathStr)) {
             const targetEntity = this.props.metapath[0].data('label');
             if (this.props.metapath.length === 3) {
                 const relatingEntity = this.props.metapath[1].data('label');
                 return `Metapath will retrieve ${targetEntity} entities, that are connected with one ${relatingEntity} entity.`;
             } else {
-                
-                const metapathString = this.props.metapath.map((entity, index) => {
-                    return entity.data('label');
-                }).join("-");
-                return `Metapath will retrieve ${targetEntity} entities, that are connected with the metapath: ${metapathString}.`;
+                return `Metapath will retrieve ${targetEntity} entities, that are connected with the metapath: ${this.getMetapathString(this.props.metapath)}.`;
             }
         }
         return <div></div>;
     }
 
-    checkConstraints() {
+    checkConstraints(constraintsToCheck) {
         if (this.props.analysis === 'simjoin' || this.props.analysis === 'simsearch')
             return true;
 
         const constraints = {};
-        _.forOwn(this.props.constraints, (entityConstraint, entity) => {
+        _.forOwn(constraintsToCheck, (entityConstraint, entity) => {
             const e = entity.substr(0, 1);
             let entityConditions = [];
 
@@ -197,11 +208,11 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
 
     getInterpretation() {
         if (this.props.metapathLoading === metapathActions.GET_METAPATH_DESCRIPTION) {
-            return <Spinner />;
+            return <Spinner size='sm' />;
         } else if (this.props.metapathInfo && this.props.metapathInfo.metapathDescription) {
             return this.props.metapathInfo.metapathDescription;
         }
-        return this.getCrudeInterpretation();
+        return this.getCrudeInterpretation(metapathToString(this.props.metapath));
     }
 
     render() {
@@ -218,10 +229,11 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
             const recommendationList = this.getMetapathRecommendation(metapathEntities);
             metapathEntities.forEach( (element, index) => {
                 if (metapathEntityBoxes.length > 0) {
-                    metapathEntityBoxes.push(<EntityConnector />);
+                    metapathEntityBoxes.push(<EntityConnector key={`conn-${index}`} />);
                 }
                 if (!metapathTypesSeen.includes(element)) {
                     metapathTypesSeen.push(element);
+
                     metapathEntityBoxes.push(
                         <EntityBox key={index} className='' color="dark" disabled entity={element}
                                    constraints={tempConstraints[idIndexedSchema[element]]}
@@ -242,45 +254,107 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
                     delete tempConstraints[element];
                 } else {
                     metapathEntityBoxes.push(
-                        <EntityBox className='' color="dark" disabled entity={element} constraintsControl={false}
+                        <EntityBox key={index} className='' color="dark" disabled entity={element} constraintsControl={false}
                                    idIndexedSchema={idIndexedSchema}
                                    dataset={null} />
                     );
                 }
             });
+            const isCurrentMetapathValid = this.isMetapathValid(this.props.metapath, this.props.constraints);
+
             return (
                 <Row>
-                    <div className="align-items-center col-12 d-flex flex-wrap">
-                        { metapathEntityBoxes }
-                        <MetapathControl schema={this.props.schema} metapath={this.props.metapath}
-                                        onNewEntity={this.props.onNewEntity} onDelete={this.props.onDelete} />
-                        <Recommendation
-                            recommendationEntities={recommendationList}
-                            idIndexedSchema={idIndexedSchema}
-                            onRecommendationAccept={this.props.onRecommendationAccept} />
-                    </div>
+                    <div className="col-8 ">
+                        <Row>
+                            <Col xs={8}>
+                                <h5 className="col-12 pl-0">Metapath Editor</h5>
+                            </Col>
 
-                    <div className="align-items-center col-12 d-flex">
+                            <Col xs={4} className={'text-right'}>
+                                <Button outline color={'success'} size={'sm'} onClick={this.props.handleNewMetapath} title={ (!isCurrentMetapathValid) ? "The current metapath must be valid in order to add a new one." : "Add a new metapath" } 
+                                disabled={false && !isCurrentMetapathValid // TODO remove false
+                                }>
+                                    <FontAwesomeIcon icon={faPlus} /> Add new
+                                </Button>
+                                &nbsp;
+                                <Button outline color={'danger'} size={'sm'} onClick={this.props.handleClear} title="Clear current metapath">
+                                    <FontAwesomeIcon icon={faTimes} /> Clear
+                                </Button>
+                            </Col>
+
+                            
+                        </Row>
+                        <Row>
+                            <Col md='12' className="d-flex flex-wrap align-items-center ">
+                                { metapathEntityBoxes }
+                                <MetapathControl schema={this.props.schema} metapath={this.props.metapath}
+                                                onNewEntity={this.props.onNewEntity} onDelete={this.props.onDelete} />
+                                <Recommendation
+                                    recommendationEntities={recommendationList}
+                                    idIndexedSchema={idIndexedSchema}
+                                    onRecommendationAccept={this.props.onRecommendationAccept} />
+                            </Col>
+                        </Row>
                         { 
-                            this.isMetapathValid() ?
+                            isCurrentMetapathValid ?
                                 <span className="text-success font-italic">
                                     <FontAwesomeIcon icon={faCheckCircle} title="Metapath is valid!"/> { this.getInterpretation() }
                                 </span>
                             : 
                                 <span className="text-danger font-italic">
-                                    <FontAwesomeIcon icon={faExclamationCircle} /> { this.generateNotification() }
+                                    <FontAwesomeIcon icon={faExclamationCircle} title="Metapath is invalid!" /> { this.generateNotification(this.props.metapath, this.props.constraints) }
                                 </span>
                         }
                     </div>
+                    <div className="col-4">
+                        <Row>
+                            <Col xs={8}>
+                                <h5 className="col-12 pl-0">Selected Metapath(s)</h5>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col>
+                                <ListGroup>
+                                {
+                                    this.props.queries.map( (q, i) => {
+
+                                        const statusIcon = (this.isMetapathValid(q.metapath, q.constraints)) 
+                                            ? <FontAwesomeIcon icon={faCheckCircle} title="Metapath is valid!"/>
+                                            : <FontAwesomeIcon icon={faExclamationCircle} title={this.generateNotification(q.metapath, q.constraints)}/>
+
+                                        return <ListGroupItem action key={i} active={i === this.props.currentQueryIdx} onClick={() => { this.props.handleMetapathSelection(i); }}>
+                                            <Row className='small'>
+                                                <Col md='9'>
+                                                    {
+                                                        (i === this.props.currentQueryIdx) 
+                                                            ? <FontAwesomeIcon icon={faEdit} title="Currently editing this metapath"/>
+                                                            : statusIcon
+                                                    } { this.getMetapathString(q['metapath']) }
+                                                </Col>
+                                                <Col md='3' className="text-right">
+                                                    <FontAwesomeIcon icon={faTimes} title="Delete metapath" onClick={this.props.handleMetapathDeletetion.bind(this, i)} />
+                                                </Col>
+                                            </Row>
+                                        </ListGroupItem>;
+                                    })
+                                }
+                                </ListGroup>
+                            </Col>
+                        </Row>
+
+                    </div>
                 </Row>
-               
             );
         } else if (this.nodes) {
             return (
                 <Row className={'justify-content-start'}>
                     <Col xs={12}>
-                        <Button outline color="dark" size="sm" onClick={this.toggleEntitySelectionModal.bind(this)}>Select starting
-                            entity</Button>
+                        
+                        <div className="mb-2">
+                            Start editing the metapath(s) to be considered in this analysis either by clicking nodes in the dataset schema or by using the buttons below. 
+                        </div>
+
+                        <Button outline color="dark" size="sm" onClick={this.toggleEntitySelectionModal.bind(this)}>Select starting entity</Button>
                         {(this.state.entityModalOpen) &&
                         <EntityInsertionModal entities={this.nodes} onSelection={this.props.onNewEntity}
                                               onDismiss={this.toggleEntitySelectionModal.bind(this)} />}
@@ -315,7 +389,6 @@ const mapStateToProps = (storeState: IRootState) => ({
     metapathInfo: storeState.metapath.metapathInfo,
     metapathLoading: storeState.metapath.loading
 });
-
 
 const mapDispatchToProps = {
 };
