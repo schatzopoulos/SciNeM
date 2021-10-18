@@ -15,7 +15,6 @@ import { ACTION_TYPES as metapathActions} from 'app/modules/metapath/metapath.re
 import { faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { metapathToString } from '../../shared/util/metapath-utils';
 
-
 interface MetapathPanelProps {
     constraints: any,
     dataset: string,
@@ -23,7 +22,7 @@ interface MetapathPanelProps {
     queries: any,
     currentQueryIdx: number,
     analysis: any,
-    schema: any,
+    schema: any,   
     selectField: string,
     selectFieldOptions: any,
     metapathLoading: any,
@@ -267,7 +266,7 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
                     <div className="col-8 ">
                         <Row>
                             <Col xs={8}>
-                                <h5 className="col-12 pl-0">Metapath Editor</h5>
+                                <h5 className="col-12 pl-0">Metapath editor</h5>
                             </Col>
 
                             <Col xs={4} className={'text-right'}>
@@ -298,18 +297,18 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
                         { 
                             isCurrentMetapathValid ?
                                 <span className="text-success font-italic">
-                                    <FontAwesomeIcon icon={faCheckCircle} title="Metapath is valid!"/> { this.getInterpretation() }
+                                    <FontAwesomeIcon icon={faCheckCircle} title="Metapath is valid!"/> <small>{ this.getInterpretation() }</small>
                                 </span>
                             : 
                                 <span className="text-danger font-italic">
-                                    <FontAwesomeIcon icon={faExclamationCircle} title="Metapath is invalid!" /> { this.generateNotification(this.props.metapath, this.props.constraints) }
+                                    <FontAwesomeIcon icon={faExclamationCircle} title="Metapath is invalid!" /> <small>{ this.generateNotification(this.props.metapath, this.props.constraints) }</small>
                                 </span>
                         }
                     </div>
-                    <div className="col-4">
+                    <div className="col-4 metapath-panel">
                         <Row>
                             <Col xs={8}>
-                                <h5 className="col-12 pl-0">Selected Metapath(s)</h5>
+                                <h5 className="col-12 pl-0">Selected metapath(s)</h5>
                             </Col>
                         </Row>
                         <Row>
@@ -385,18 +384,4 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
     }
 }
 
-const mapStateToProps = (storeState: IRootState) => ({
-    metapathInfo: storeState.metapath.metapathInfo,
-    metapathLoading: storeState.metapath.loading
-});
-
-const mapDispatchToProps = {
-};
-
-type StateProps = ReturnType<typeof mapStateToProps>;
-type DispatchProps = typeof mapDispatchToProps;
-
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(MetapathPanel);
+export default MetapathPanel;

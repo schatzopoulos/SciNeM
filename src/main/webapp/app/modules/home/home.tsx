@@ -29,6 +29,7 @@ import { faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
 import ConfigurationModal from './configurationModal';
 import { throws } from 'assert';
 import { metapathToString } from '../../shared/util/metapath-utils';
+import { constants } from 'os';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -42,7 +43,7 @@ export interface IHomeProps extends StateProps, DispatchProps {
 
 export class Home extends React.Component<IHomeProps> {
     readonly state: any = {
-        queries: [ ],
+        queries: [],
         currentQueryIdx: 0,
 
         neighbors: undefined,
@@ -79,6 +80,11 @@ export class Home extends React.Component<IHomeProps> {
     _metapathPanelRef: any;
     cy: any;
     polling: any;
+
+    constructor(props) {
+        super(props);
+        // this._metapathPanelRef = React.createRef();
+    }
 
     getCurrentQuery() {
         return this.state.queries[this.state.currentQueryIdx] || [];
@@ -570,7 +576,6 @@ export class Home extends React.Component<IHomeProps> {
         if (currentQueryIdx && queries.length - 1 < currentQueryIdx) {
             currentQueryIdx -= 1;
         }
-        console.warn({ queries, currentQueryIdx});
 
         this.setState({ 
             queries, currentQueryIdx
@@ -917,11 +922,25 @@ export class Home extends React.Component<IHomeProps> {
         return (this.state.dataset === '') ? Object.keys(this.props.schemas)[0] : this.state.dataset;
     }
 
+    validateQueries() {
+        console.warn(this._metapathPanelRef);
+
+        if (_.isEmpty(this.state.queries) || !this._metapathPanelRef)
+            return false;
+
+        let valid = true;
+
+        this.state.queries.forEach( ({ metapath, constraints }) => {
+            console.warn(metapath);
+            console.warn(constraints);
+            valid = valid && this._metapathPanelRef.isMetapathValid(metapath, constraints);
+        });
+        return valid;
+    }
     render() {
         const datasetOptions = this.getDatasetOptions();
         const schema = this.getSchema();
-        const validMetapath = true; // this._metapathPanelRef.checkSymmetricMetapath();
-        const validConstraints = true; // this._metapathPanelRef.checkConstraints();
+        const validQueries = this.validateQueries();
         const validAnalysisType = this.state.analysis.length !== 0;
         const validTargetEntity = (!this.state.analysis.includes('Similarity Search') || (this.state.analysis.includes('Similarity Search') && this.state.targetEntity !== ''));
         const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
@@ -1146,7 +1165,7 @@ console.warn(this.state.queries);
                         </Row>
                         {(this.props.schemas) &&
                         <MetapathPanel
-                            ref={ (r) => { this._metapathPanelRef = r }}
+                            ref={ (ref) =>  this._metapathPanelRef = ref }
                             metapath={this.getCurrentMetapath()}
                             queries={this.state.queries}
                             currentQueryIdx={this.state.currentQueryIdx}
@@ -1154,6 +1173,8 @@ console.warn(this.state.queries);
                             dataset={datasetToUse}
                             analysis={this.state.analysis}
                             constraints={this.getCurrentConstraints()}
+                            metapathLoading={this.props.metapathLoading}
+                            metapathInfo={this.props.metapathInfo}
                             selectField={this.state.selectField}
                             selectFieldOptions={selectFieldOptions}
                             onNewEntity={this.simulateClickOnNode.bind(this)}
@@ -1172,14 +1193,14 @@ console.warn(this.state.queries);
                             handlePredefinedMetapathAddition={this.setMetapath.bind(this)}
                             handleMetapathSelection={this.changeCurrentMetapath.bind(this)}
                             handleMetapathDeletetion={this.deleteSelectedMetapath.bind(this)}
-                            />                                   
+                        />                                   
                         }
                     </Col>
                 </Row>
                 <Row className={'mt-4'}>
                     <Col md={{ size: 4, offset: 4 }}>
                         <Button block color="success"
-                                disabled={this.props.loading || !validMetapath || !validConstraints || !validTargetEntity}
+                                disabled={this.props.loading || !validQueries || !validTargetEntity}
                                 onClick={this.execute.bind(this)}>
                             <FontAwesomeIcon icon="play" /> Execute analysis
                         </Button>
@@ -1219,8 +1240,8 @@ console.warn(this.state.queries);
                                     </Row>
                                 }
                                 {
-                                    (this.props.loading) && <Progress animated color="info"
-                                                                      value={this.props.progress}>{this.props.progressMsg}</Progress>
+                                    (this.props.loading) && 
+                                        <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
                                 }
                                 <ResultsPanel
                                     uuid={this.props.uuid}
@@ -1252,6 +1273,8 @@ const mapStateToProps = (storeState: IRootState) => ({
     uuid: storeState.analysis.uuid,
     analysis: storeState.analysis.analysis,
     schemas: storeState.datasets.schemas,
+    metapathInfo: storeState.metapath.metapathInfo,
+    metapathLoading: storeState.metapath.loading,
 });
 
 const mapDispatchToProps = {

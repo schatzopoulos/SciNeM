@@ -65,3 +65,10 @@
 .list-group-item:hover {
   cursor: pointer;
 }
+
+.metapath-panel {
+  border: solid 2px;
+  border-color: #1c7987;
+  border-radius: 10px;
+  padding: 10px;
+}
