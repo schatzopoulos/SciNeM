@@ -27,9 +27,7 @@ import MetapathPanel from '../metapath/metapath-panel';
 import AutocompleteInput from '../datasets/autocomplete-input';
 import { faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
 import ConfigurationModal from './configurationModal';
-import { throws } from 'assert';
 import { metapathToString } from '../../shared/util/metapath-utils';
-import { constants } from 'os';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -80,11 +78,6 @@ export class Home extends React.Component<IHomeProps> {
     _metapathPanelRef: any;
     cy: any;
     polling: any;
-
-    constructor(props) {
-        super(props);
-        // this._metapathPanelRef = React.createRef();
-    }
 
     getCurrentQuery() {
         return this.state.queries[this.state.currentQueryIdx] || [];
@@ -179,7 +172,6 @@ export class Home extends React.Component<IHomeProps> {
         if (!prevProps.schemas && this.props.schemas) {
             this.initCy();
         }
-
     }
 
     componentWillUnmount() {
@@ -479,7 +471,6 @@ export class Home extends React.Component<IHomeProps> {
     handleConstraintRemoval({ entity, field, index }) {
         const constraints = { ...this.getCurrentConstraints() };
 
-        // constraints[entity][field]['conditions'] = constraints[entity][field]['conditions'].filter(n => n.index !== index);
         const newConditions = [];
         let deleted = false;
         constraints[entity][field]['conditions'].forEach(constraintObject => {
@@ -494,9 +485,7 @@ export class Home extends React.Component<IHomeProps> {
         });
         constraints[entity][field]['conditions'] = newConditions;
         constraints[entity][field]['nextIndex'] = constraints[entity][field]['conditions'].length;
-        this.setState({
-            constraints
-        });
+        this.setState({ constraints });
     }
 
     getConstraintsExpression() {
@@ -535,8 +524,6 @@ export class Home extends React.Component<IHomeProps> {
                 this.animateNeighbors(undefined);
             });
         }
-
-        
     }
 
     addNewMetapath() {
@@ -617,52 +604,6 @@ export class Home extends React.Component<IHomeProps> {
         );
     }
 
-    // runExample(e) {
-
-    //     const newState = { ...this.state };
-
-    //     const nodes = this.cy.filter('node');
-
-    //     switch (this.state.analysis) {
-    //         case 'ranking': {
-    //             const node = nodes.select('label=MiRNA');
-
-    //             newState.dataset = 'Bio';
-    //             newState.metapathStr = 'MGDGM';
-    //             newState.selectField = 'name';
-    //             newState.constraints = {
-    //                 'Disease': {
-    //                     'name': {
-    //                         'nextIndex': 1,
-    //                         'enabled': true,
-    //                         'type': 'string',
-    //                         'conditions': [{ 'index': 0, 'value': 'Adenocarcinoma', 'operation': '=' }]
-    //                     }
-    //                 }
-    //             };
-    //             break;
-    //         }
-    //         case 'simjoin':
-    //             newState.dataset = 'DBLP';
-    //             newState.metapathStr = 'VPTPV';
-    //             newState.selectField = 'name';
-    //             break;
-    //         case 'simsearch':
-    //             newState.dataset = 'DBLP';
-    //             newState.metapathStr = 'VPAPV';
-    //             newState.selectField = 'name';
-    //             newState.targetEntity = 360;
-    //             break;
-    //         default:
-    //             alert('This type of analysis will be implemented soon');
-    //     }
-
-    //     this.setState(newState, () => {
-    //         this.changeSchema();
-    //         this.execute(e, null);
-    //     });
-    // }
-
     loadMoreResults(analysis, nextPage) {
         this.props.getMoreResults(analysis, this.props.uuid, nextPage);
     }
@@ -697,9 +638,7 @@ export class Home extends React.Component<IHomeProps> {
 
         constraints[entity][field]['enabled'] = !constraints[entity][field]['enabled'];
 
-        this.setState({
-            constraints
-        });
+        this.setState({ constraints });
     }
 
     toggleConfiguration() {
@@ -727,7 +666,7 @@ export class Home extends React.Component<IHomeProps> {
 
         let elements;
         let datasetToUse = null;
-        // let dataset = {};
+
         if (this.props.schemas) {
             datasetToUse = this.getCurrentDataset();
             elements = this.props.schemas[datasetToUse]['elements'];
@@ -737,12 +676,9 @@ export class Home extends React.Component<IHomeProps> {
 
         let schema;
         if (elements) {
-            schema = <CytoscapeComponent cy={(cy) => {
-                this.cy = cy;
-            }} elements={elements} style={style} layout={layout} zoomingEnabled={false} />;
+            schema = <CytoscapeComponent cy={(cy) => { this.cy = cy; }} elements={elements} style={style} layout={layout} zoomingEnabled={false} />;
         } else {
-            schema = <Spinner style={{ width: '200px', height: '200px', marginLeft: 'auto', marginRight: 'auto' }}
-                              type="grow" color="info" />;
+            schema = <Spinner style={{ width: '200px', height: '200px', marginLeft: 'auto', marginRight: 'auto' }} type="grow" color="info" />;
         }
 
         return schema;
@@ -754,10 +690,12 @@ export class Home extends React.Component<IHomeProps> {
 
         this.cy.elements().remove();
         this.cy.add(elements);
+        
         const newLayout = this.cy.layout({
             name: 'cose',
             animate: false
         });
+
         newLayout.run();
         this.cy.center();
     }
@@ -808,18 +746,15 @@ export class Home extends React.Component<IHomeProps> {
     }
 
     handleTargetEntity(e) {
-        let selected;
+        let targetEntity;
 
         if (_.isEmpty(e)) {
-            selected = '';
+            targetEntity = '';
         } else {
-            // [selected] = e;
-            selected = e.id;
+            targetEntity = e.id;
         }
 
-        this.setState({
-            targetEntity: selected
-        });
+        this.setState({ targetEntity });
     }
 
     handleAdvancedOptions(e) {
@@ -869,7 +804,6 @@ export class Home extends React.Component<IHomeProps> {
                 const disjunctionExpressions = field.map(disjunction => {
                     if (disjunction.length > 1) {
                         const conjunctionExpressions = disjunction.map(conjunctionElement => {
-                            // console.log(conjunctionElement);
                             return conjunctionElement.field + conjunctionElement.condition;
                         });
                         if (field.length > 1) {
@@ -944,7 +878,6 @@ export class Home extends React.Component<IHomeProps> {
         const validAnalysisType = this.state.analysis.length !== 0;
         const validTargetEntity = (!this.state.analysis.includes('Similarity Search') || (this.state.analysis.includes('Similarity Search') && this.state.targetEntity !== ''));
         const { selectedEntity, selectFieldOptions }: any = this.getSelectFieldOptions();
-console.warn(this.state.queries);
 
         let datasetToUse;
         if (this.props.schemas) {
@@ -956,17 +889,13 @@ console.warn(this.state.queries);
                                      title="Ranking analysis is perfomed using PageRank." />
 		</span>;
         const communityLabel = <span>
-			Community Detection <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle"
-                                                 title="Community Detection analysis is perfomed using Louvain Modularity method." />
+			Community Detection <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Community Detection analysis is perfomed using Louvain Modularity method." />
 		</span>;
         const simJoinLabel = <span>
-			Similarity Join <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle"
-                                             title="Similarity Join is perfomed using JoinSim." />
+			Similarity Join <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Similarity Join is perfomed using JoinSim." />
 		</span>;
         const simSearchLabel = <span>
-			Similarity Search <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle"
-                                               title="Similarity Search is perfomed using JoinSim similarity measure." />
-
+			Similarity Search <FontAwesomeIcon style={{ color: '#17a2b8' }} icon="question-circle" title="Similarity Search is perfomed using JoinSim similarity measure." />
 		</span>;
 
         return (

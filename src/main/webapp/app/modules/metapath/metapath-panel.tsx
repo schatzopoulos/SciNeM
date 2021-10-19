@@ -8,8 +8,6 @@ import Recommendation from 'app/modules/metapath/recommendation';
 import PredefinedMetapathBrowser from 'app/modules/metapath/predefined-metapath-browser';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faExclamationCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
-import { IRootState } from 'app/shared/reducers';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import { ACTION_TYPES as metapathActions} from 'app/modules/metapath/metapath.reducer';
 import { faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -90,11 +88,9 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
     }
 
     togglePredefinedMetapathsModal() {
-        this.setState(
-            {
-                predefinedMetapathsModalOpen: (!this.state.predefinedMetapathsModalOpen)
-            }
-        )
+        this.setState({
+                predefinedMetapathsModalOpen: !this.state.predefinedMetapathsModalOpen
+        });
     }
 
     isMetapathValid(metapath, constraints) {
@@ -143,8 +139,7 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
 
         const firstHalf = metapath.substr(0, midPos);
         const lastHalf = metapath.substr(midPos, metapath.length - 1);
-        // console.log("first " + firstHalf);
-        // console.log("last " + lastHalf);
+
         return (firstHalf === this.reverseString(lastHalf));
     }
 
@@ -280,8 +275,6 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
                                     <FontAwesomeIcon icon={faTimes} /> Clear
                                 </Button>
                             </Col>
-
-                            
                         </Row>
                         <Row>
                             <Col md='12' className="d-flex flex-wrap align-items-center ">
@@ -340,7 +333,6 @@ class MetapathPanel extends React.Component<MetapathPanelProps> {
                                 </ListGroup>
                             </Col>
                         </Row>
-
                     </div>
                 </Row>
             );
