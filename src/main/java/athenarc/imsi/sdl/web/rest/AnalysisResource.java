@@ -73,10 +73,7 @@ public class AnalysisResource {
             analysisService.submit(
                 id,
                 config.getAnalysis(),
-                config.getMetapath(),
-                config.getJoinpath(),
-                config.getConstraints(),
-                config.getConstraintsExpression(),
+                config.getQueries(),
                 config.getPrimaryEntity(),
                 config.getSearchK(),
                 config.getT(),

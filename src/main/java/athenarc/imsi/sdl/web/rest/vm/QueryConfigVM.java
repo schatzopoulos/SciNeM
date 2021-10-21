@@ -2,6 +2,8 @@ package athenarc.imsi.sdl.web.rest.vm;
 
 import java.util.ArrayList;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -11,27 +13,64 @@ import org.bson.Document;
  * View Model object for storing a user's credentials.
  */
 public class QueryConfigVM {
+    public static class Query {
+        @NotEmpty
+        @Size(min = 1, max = 50)
+        public String metapath;
 
-    @NotNull
-    @Size(min = 1, max = 50)
-    private String metapath;
+        @Size(min = 1, max = 50)
+        public String joinpath;
 
-    @Size(min = 1, max = 50)
-    private String joinpath;
+        @NotEmpty
+        public Document constraints;
+
+        public String constraintsExpression;
+
+        public String getMetapath() {
+            return metapath;
+        }
+
+        public void setMetapath(String metapath) {
+            this.metapath = metapath;
+        }
+
+        public String getJoinpath() {
+            return joinpath;
+        }
+
+        public void setJoinpath(String joinpath) {
+            this.joinpath = joinpath;
+        }
+
+        public Document getConstraints() {
+            return constraints;
+        }
+
+        public void setConstraints(Document constraints) {
+            this.constraints = constraints;
+        }
+
+        public String getConstraintsExpression() {
+            return constraintsExpression;
+        }
+
+        public void setConstraintsExpression(String constraintsExpression) {
+            this.constraintsExpression = constraintsExpression;
+        }
+        
+    }
+
+    @Valid
+    private ArrayList<Query> queries;
 
     @NotNull
     private String dataset;
-
-    @NotNull
-    private Document constraints;
 
     @NotNull
     private String selectField;
 
     @NotNull
     private ArrayList<String> analysis;
-
-    private String constraintsExpression;
 
     @NotNull
     private String primaryEntity;
@@ -51,14 +90,6 @@ public class QueryConfigVM {
     private int commMaxSteps;
     private int commNumOfCommunities;
     private double commRatio;
-
-    public void setConstraintsExpression(String constraintsExpression) {
-        this.constraintsExpression=constraintsExpression;
-    }
-
-    public String getConstraintsExpression() {
-        return this.constraintsExpression;
-    }
 
     public int getSimMinValues() {
         return this.simMinValues;
@@ -100,10 +131,6 @@ public class QueryConfigVM {
         this.edgesThreshold = edgesThreshold;
     }
 
-    public String getMetapath() {
-        return metapath;
-    }
-
     public int getSearchK() {
         return this.searchK;
     }
@@ -125,18 +152,6 @@ public class QueryConfigVM {
 
     public void setMinValues(int minValues) {
         this.minValues = minValues;
-    }
-
-    public void setMetapath(String metapath) {
-        this.metapath = metapath;
-    }
-
-    public Document getConstraints() {
-        return this.constraints;
-    }
-
-    public void setConstraints(Document constraints) {
-        this.constraints = constraints;
     }
 
     public String getDataset() {
@@ -171,21 +186,15 @@ public class QueryConfigVM {
         this.analysis = analysis;
     }
 
-    public String getJoinpath() {
-        return this.joinpath;
-    }
-
-    public void setJoinpath(String joinpath) {
-        this.joinpath = joinpath;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("RankingParamsVM {");
-        sb.append("\tmetapath: " + this.metapath);
-        sb.append("\tconstraint: " + this.constraints.toString());
-        sb.append("\tdataset: " + this.dataset);
+        for (Query query : this.queries) {
+            sb.append("\tmetapath: " + query.metapath);
+            sb.append("\tconstraint: " + query.constraints.toString());
+            sb.append("\tdataset: " + this.dataset);
+        }
         sb.append("}");
         return sb.toString();
     }
@@ -237,4 +246,13 @@ public class QueryConfigVM {
     public void setCommRatio(double commRatio) {
         this.commRatio = commRatio;
     }
+
+    public ArrayList<Query> getQueries() {
+        return queries;
+    }
+
+    public void setQueries(ArrayList<Query> queries) {
+        this.queries = queries;
+    }
+
 }

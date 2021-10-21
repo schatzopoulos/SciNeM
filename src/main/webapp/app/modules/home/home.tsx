@@ -16,7 +16,7 @@ import {
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
-import { generateGroupsOfDisjunctions } from 'app/shared/util/constraint-utils';
+import { generateGroupsOfDisjunctions, constraintsSummary } from 'app/shared/util/constraint-utils';
 import CytoscapeComponent from 'react-cytoscapejs';
 import _ from 'lodash';
 import { analysisRun, getMoreResults, getResults, getStatus} from '../analysis/analysis.reducer';
@@ -25,7 +25,7 @@ import { getDatasetSchemas } from '../datasets/datasets.reducer'
 import ResultsPanel from '../analysis/results/results';
 import MetapathPanel from '../metapath/metapath-panel';
 import AutocompleteInput from '../datasets/autocomplete-input';
-import { faTimes, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import ConfigurationModal from './configurationModal';
 import { metapathToString } from '../../shared/util/metapath-utils';
 
@@ -488,13 +488,7 @@ export class Home extends React.Component<IHomeProps> {
         this.setState({ constraints });
     }
 
-    getConstraintsExpression() {
-        const constaintDescriptions = {};
-        Object.keys(this.getCurrentConstraints()).forEach((entity, index) => {
-            constaintDescriptions[entity] = generateGroupsOfDisjunctions(this.getCurrentConstraints(), `${entity}.`);
-        });
-        return this.constraintsSummary(constaintDescriptions);
-    }
+
 
     clearCurrentMetapath() {
         const newState = { ... this.state };
@@ -579,10 +573,11 @@ export class Home extends React.Component<IHomeProps> {
 
         this.props.analysisRun(
             analysisType,
-            metapathToString(this.getCurrentMetapath()),
-            this.getJoinPath(),
-            this.getCurrentConstraints(),
-            this.getConstraintsExpression(),
+            // metapathToString(this.getCurrentMetapath()),
+            // this.getJoinPath(),
+            // this.getCurrentConstraints(),
+            // this.getConstraintsExpression(),
+            this.state.queries,
             this.getPrimaryEntity(),
             this.getCurrentDataset(),
             this.state.selectField,
@@ -599,8 +594,8 @@ export class Home extends React.Component<IHomeProps> {
             this.state.commMaxSteps,
             this.state.commNumOfCommunities, 
             this.state.commRatio,
-            (rerunAnalysis) ? 15 : undefined,
-            (rerunAnalysis) ? 1 : undefined
+            // (rerunAnalysis) ? 15 : undefined,
+            // (rerunAnalysis) ? 1 : undefined
         );
     }
 
@@ -645,12 +640,6 @@ export class Home extends React.Component<IHomeProps> {
         this.setState({
             configurationActive: !this.state.configurationActive
         });
-    }
-
-    getJoinPath() {
-        const metapath = metapathToString(this.getCurrentMetapath());
-        const midPos = Math.floor(metapath.length / 2) + 1;
-        return metapath.substr(0, midPos);
     }
 
     getSchema() {
@@ -771,7 +760,7 @@ export class Home extends React.Component<IHomeProps> {
             Object.keys(this.getCurrentConstraints()).forEach((entity, index) => {
                 constaintDescriptions[entity] = generateGroupsOfDisjunctions(this.getCurrentConstraints()[entity], `${entity}.`);
             });
-            const constraints = this.constraintsSummary(constaintDescriptions);
+            const constraints = constraintsSummary(constaintDescriptions);
 
             let statusString = '';
             switch (this.props.analysesParameters.status) {
@@ -795,31 +784,6 @@ export class Home extends React.Component<IHomeProps> {
         this.setState({
             description: [dataset, metapath, description]
         })
-    }
-
-    constraintsSummary(constraintSegments) {
-        const constraintExpressions = Object.keys(constraintSegments).map(entity => {
-            const entityFields = constraintSegments[entity];
-            const fieldExpressions = entityFields.map(field => {
-                const disjunctionExpressions = field.map(disjunction => {
-                    if (disjunction.length > 1) {
-                        const conjunctionExpressions = disjunction.map(conjunctionElement => {
-                            return conjunctionElement.field + conjunctionElement.condition;
-                        });
-                        if (field.length > 1) {
-                            return `(${conjunctionExpressions.join(' and ')})`;
-                        } else {
-                            return `${conjunctionExpressions.join(' and ')}`;
-                        }
-                    } else {
-                        return disjunction[0].field + disjunction[0].condition;
-                    }
-                });
-                return disjunctionExpressions.join(' or ');
-            });
-            return fieldExpressions.filter(expression => !!expression).join(', ');
-        });
-        return constraintExpressions.filter(expression => !!expression).join(', ');
     }
 
     clearAllMetapaths() {
@@ -857,16 +821,12 @@ export class Home extends React.Component<IHomeProps> {
     }
 
     validateQueries() {
-        console.warn(this._metapathPanelRef);
-
         if (_.isEmpty(this.state.queries) || !this._metapathPanelRef)
             return false;
 
         let valid = true;
 
         this.state.queries.forEach( ({ metapath, constraints }) => {
-            console.warn(metapath);
-            console.warn(constraints);
             valid = valid && this._metapathPanelRef.isMetapathValid(metapath, constraints);
         });
         return valid;

@@ -24,9 +24,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import athenarc.imsi.sdl.config.Constants;
-import athenarc.imsi.sdl.domain.PredefinedMetapath;
 import athenarc.imsi.sdl.repository.PredefinedMetapathRepository;
 import athenarc.imsi.sdl.service.util.FileUtil;
+import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM.Query;
 
 @Service
 public class AnalysisService {
@@ -37,8 +37,7 @@ public class AnalysisService {
     private final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
     @Async
-    public void submit(String id, ArrayList<String> analysis, String metapath, String joinpath, Document constraints,
-                       String constraintsExpression, String primaryEntity, int searchK, int t, int targetId, String dataset,
+    public void submit(String id, ArrayList<String> analysis, ArrayList<Query> queries, String primaryEntity, int searchK, int t, int targetId, String dataset,
                        String selectField, int edgesThreshold, double prAlpha, double prTol, int simMinValues,
                        String commAlgorithm, double commThreshold, int commStopCriterion, int commMaxSteps, int commNumOfCommunities, double commRatio) throws java.io.IOException, InterruptedException {
 
@@ -47,42 +46,42 @@ public class AnalysisService {
         String hdfsOutputDir = Constants.HDFS_BASE_PATH + "/" + id;
         String outputLog = FileUtil.getLogfile(id);
 
-        String config = FileUtil.writeConfig(analysis, outputDir, hdfsOutputDir, metapath, joinpath, constraints, constraintsExpression, primaryEntity, searchK, t,
+        String config = FileUtil.writeConfig(analysis, outputDir, hdfsOutputDir, queries, primaryEntity, searchK, t,
                 targetId, dataset, selectField, edgesThreshold, prAlpha, prTol, simMinValues, commAlgorithm, commThreshold, commStopCriterion, commMaxSteps, commNumOfCommunities, commRatio);
 
-        // prepare ranking script arguments
+
+
+        // PredefinedMetapath predefinedMetapath = predefinedMetapathRepository.findFirstByDatasetAndMetapathAbbreviation(dataset, metapath);
+        // if (predefinedMetapath!=null) {
+        //     PredefinedMetapath.Analytics metapathAnalytics = predefinedMetapath.getAnalytics();
+        //     PredefinedMetapath.Analytics.TimesUsed frequencies = metapathAnalytics.getTimesUsed();
+        //     for (String analysisType : analysis) {
+        //         String analysisTypeNormalized = analysisType.toLowerCase();
+        //         log.debug("analysis: " + analysisTypeNormalized);
+        //         switch (analysisTypeNormalized) {
+        //             case "ranking":
+        //                 frequencies.setRanking(frequencies.getRanking() + 1);
+        //                 break;
+        //             case "community detection":
+        //                 frequencies.setCommunityDetection(frequencies.getCommunityDetection() + 1);
+        //                 break;
+        //             case "similarity join":
+        //                 frequencies.setSimJoin(frequencies.getSimJoin() + 1);
+        //                 break;
+        //             case "similarity search":
+        //                 frequencies.setSimSearch(frequencies.getSimSearch() + 1);
+        //                 break;
+        //             default:
+        //                 break;
+        //         }
+        //     }
+        //     metapathAnalytics.setTimesUsed(frequencies);
+        //     predefinedMetapath.setAnalytics(metapathAnalytics);
+
+        //     predefinedMetapathRepository.save(predefinedMetapath);
+        // }
+
         ProcessBuilder pb = new ProcessBuilder();
-
-        PredefinedMetapath predefinedMetapath = predefinedMetapathRepository.findFirstByDatasetAndMetapathAbbreviation(dataset, metapath);
-        if (predefinedMetapath!=null) {
-            PredefinedMetapath.Analytics metapathAnalytics = predefinedMetapath.getAnalytics();
-            PredefinedMetapath.Analytics.TimesUsed frequencies = metapathAnalytics.getTimesUsed();
-            for (String analysisType : analysis) {
-                String analysisTypeNormalized = analysisType.toLowerCase();
-                log.debug("analysis: " + analysisTypeNormalized);
-                switch (analysisTypeNormalized) {
-                    case "ranking":
-                        frequencies.setRanking(frequencies.getRanking() + 1);
-                        break;
-                    case "community detection":
-                        frequencies.setCommunityDetection(frequencies.getCommunityDetection() + 1);
-                        break;
-                    case "similarity join":
-                        frequencies.setSimJoin(frequencies.getSimJoin() + 1);
-                        break;
-                    case "similarity search":
-                        frequencies.setSimSearch(frequencies.getSimSearch() + 1);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            metapathAnalytics.setTimesUsed(frequencies);
-            predefinedMetapath.setAnalytics(metapathAnalytics);
-
-            predefinedMetapathRepository.save(predefinedMetapath);
-        }
-
         pb.command("/bin/bash", Constants.WORKFLOW_DIR + "analysis/analysis.sh", config);
 
         // redirect ouput to logfile

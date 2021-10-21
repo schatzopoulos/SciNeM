@@ -42,3 +42,28 @@ export const generateGroupsOfDisjunctions = (entityConstraintsObj, fieldPrefix =
       });
   }
 };
+
+export const constraintsSummary = constraintSegments => {
+  const constraintExpressions = Object.keys(constraintSegments).map(entity => {
+    const entityFields = constraintSegments[entity];
+    const fieldExpressions = entityFields.map(field => {
+      const disjunctionExpressions = field.map(disjunction => {
+        if (disjunction.length > 1) {
+          const conjunctionExpressions = disjunction.map(conjunctionElement => {
+            return conjunctionElement.field + conjunctionElement.condition;
+          });
+          if (field.length > 1) {
+            return `(${conjunctionExpressions.join(' and ')})`;
+          } else {
+            return `${conjunctionExpressions.join(' and ')}`;
+          }
+        } else {
+          return disjunction[0].field + disjunction[0].condition;
+        }
+      });
+      return disjunctionExpressions.join(' or ');
+    });
+    return fieldExpressions.filter(expression => !!expression).join(', ');
+  });
+  return constraintExpressions.filter(expression => !!expression).join(', ');
+};
