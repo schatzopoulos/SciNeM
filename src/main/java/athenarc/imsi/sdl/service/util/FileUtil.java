@@ -195,16 +195,6 @@ public final class FileUtil {
 
         // Query specific params
         config.put("queries", queries);
-        // List<Document> queriesJson = new ArrayList<>();
-        // for (Query query : queries) {
-        //     Document q = new Document();
-        //     q.put("metapath", query.getMetapath());
-        //     q.put("constraints", query.getConstraints());
-        //     q.put("joinpath", query.getJoinpath());
-        //     q.put("constraintsExpression", query.getConstraintsExpression());
-        //     queriesJson.add(q);
-        // }
-        config.put("queries", queries);
 
         // write json to config file
         String configFile = outputDir + "/" + Constants.CONFIG_FILE;
