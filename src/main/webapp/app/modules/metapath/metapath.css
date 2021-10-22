@@ -55,3 +55,20 @@
   background-color: rgba(255, 255, 255, 1);
   z-index: 1;
 }
+
+.list-group-item.active {
+  background-color: #c3dfe3;
+  border-color: #1c7987;
+  color: #1c7987;
+}
+
+.list-group-item:hover {
+  cursor: pointer;
+}
+
+.metapath-panel {
+  border: solid 2px;
+  border-color: #1c7987;
+  border-radius: 10px;
+  padding: 10px;
+}

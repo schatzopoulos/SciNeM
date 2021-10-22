@@ -175,7 +175,7 @@ export class ConstraintItemField extends React.Component<IConstraintItemFieldPro
         const dataset = this.props.dataset;
 
         const inputField = (type === 'numeric')
-            ? <Input disabled={!enabled} defaultValue={''} onChange={this.handleNumericalInput.bind(this)} bsSize="sm"
+            ? <Input disabled={!enabled} onChange={this.handleNumericalInput.bind(this)} bsSize="sm"
                      type='number' value={this.state.value || ''}
                      onKeyDown={this.handleNumericalInputEnter.bind(this)} />
             : <AutocompleteInput

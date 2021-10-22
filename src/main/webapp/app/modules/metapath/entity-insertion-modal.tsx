@@ -10,7 +10,7 @@ const EntityInsertionModal = (props) => {
         props.onDismiss()
     }
     props.entities.forEach(item => {
-        availableEntities.push(<Button color="dark" onClick={() => {
+        availableEntities.push(<Button key={item.label} color="dark" onClick={() => {
             closeModal();
             props.onSelection(item.id);
         }} block>{item.label}</Button>);
@@ -20,7 +20,7 @@ const EntityInsertionModal = (props) => {
         <Modal isOpen={modal} toggle={closeModal}>
             <ModalHeader toggle={closeModal}>Select a new entity to add</ModalHeader>
             <ModalBody>
-                {availableEntities}
+                { availableEntities }
             </ModalBody>
         </Modal>
     )

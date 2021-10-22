@@ -15,12 +15,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.bson.Document;
 
 import athenarc.imsi.sdl.config.Constants;
+import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM.Query;
 
 /**
  * Utility class for file and dir management.
@@ -121,10 +121,7 @@ public final class FileUtil {
         ArrayList<String> analyses,
         String outputDir,
         String hdfsOutputDir,
-        String metapath,
-        String joinpath,
-        Document constraints,
-        String constraintsExpression,
+        ArrayList<Query> queries,
         String primaryEntity,
         int searchK,
         int t,
@@ -198,13 +195,17 @@ public final class FileUtil {
         config.put("ratio", commRatio);
 
         // Query specific params
-        Document query = new Document();
-        query.put("metapath", metapath);
-        query.put("joinpath", joinpath);
-        query.put("constraints", constraints);
-        query.put("constraintsExpression", constraintsExpression);
-
-        config.put("query", query);
+        config.put("queries", queries);
+        List<Document> queriesJson = new ArrayList<>();
+        for (Query query : queries) {
+            Document q = new Document();
+            q.put("metapath", query.getMetapath());
+            q.put("constraints", query.getConstraints());
+            q.put("joinpath", query.getJoinpath());
+            q.put("constraintsExpression", query.getConstraintsExpression());
+            queriesJson.add(q);
+        }
+        config.put("queries", queriesJson);
 
         // write json to config file
         String configFile = outputDir + "/" + Constants.CONFIG_FILE;
@@ -289,25 +290,6 @@ public final class FileUtil {
         fis.read(data);
         fis.close();
         return new String(data, "UTF-8");
-    }
-
-    public static Document getAnalysesParameters(final Document config) {
-        ArrayList<String> ananyses = (ArrayList<String>) config.get("analyses");
-
-        Document query = (Document) config.get("query");
-        String metapath = (String) query.get("metapath");
-
-        ArrayList<String> constraints = new ArrayList<>();
-        for (final Map.Entry<String, Object> entry : ((Document) query.get("constraints")).entrySet()) {
-            constraints.add(entry.getKey() + ": " + ((String) entry.getValue()));
-        }
-
-        Document analysisParameters = new Document();
-        analysisParameters.append("analyses", ananyses);
-        analysisParameters.append("metapath", metapath);
-        analysisParameters.append("constraints", constraints);
-
-        return analysisParameters;
     }
 
     public static List<Long> getCommunityPositions(String file) throws IOException {

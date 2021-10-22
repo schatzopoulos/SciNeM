@@ -11,19 +11,15 @@ import { connect } from 'react-redux';
 import { getPredefinedMetapaths } from 'app/modules/metapath/metapath.reducer';
 
 const PredefinedMetapathBrowser = props => {
-    const metapathTotalUses = metapathData => (
-        metapathData.stats.ranking + metapathData.stats.simJoin + metapathData.stats.simSearch + metapathData.stats.communityDetection
-    );
     const predefinedMetapathsComponents = props.predefinedMetapaths
         ? props.predefinedMetapaths.sort((pm0,pm1)=>pm0.stats.rank-pm1.stats.rank).map(
             predefinedMetapathData => {
                 return (
                     <tr key={`metapath-${predefinedMetapathData.metapathAbbreviation}`}>
                         <td>{predefinedMetapathData.metapathAbbreviation}</td>
-                        <td>{predefinedMetapathData.description}</td>
-                        <td>{metapathTotalUses(predefinedMetapathData)}</td>
+                        <td>{predefinedMetapathData.description || 'N/A'}</td>
+                        <td>{predefinedMetapathData.timesUsed}</td>
                         <td><Button color={'success'} onClick={() => {
-                            // handleMetapathApplication(predefinedMetapathData.metapath);
                             props.handlePredefinedMetapathAddition(predefinedMetapathData.metapath);
                         }}>Select</Button></td>
                     </tr>

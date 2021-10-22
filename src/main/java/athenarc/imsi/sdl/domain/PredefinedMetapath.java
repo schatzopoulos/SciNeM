@@ -1,9 +1,9 @@
 package athenarc.imsi.sdl.domain;
 
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.util.List;
 
 @Document(collection = "predefinedMetapath")
 public class PredefinedMetapath {
@@ -12,35 +12,12 @@ public class PredefinedMetapath {
     private String id;
 
     private String dataset;
-    private List<String> metapath;
-    private String metapathAbbreviation;
+    private List<String> entities;
+    private String metapath;
     private String key;
     private String description;
-    private Analytics analytics;
-
-    public PredefinedMetapath() {
-    }
-
-    public PredefinedMetapath(
-        String id, String dataset, List<String> metapath, String metapathAbbreviation, String key, String description,
-        Analytics analytics
-    ) {
-        this.id = id;
-        this.dataset = dataset;
-        this.metapath = metapath;
-        this.metapathAbbreviation = metapathAbbreviation;
-        this.key = key;
-        this.description = description;
-        this.analytics = analytics;
-    }
-
-    public String getMetapathAbbreviation() {
-        return metapathAbbreviation;
-    }
-
-    public void setMetapathAbbreviation(String metapathAbbreviation) {
-        this.metapathAbbreviation = metapathAbbreviation;
-    }
+    private Integer timesUsed;
+    private Boolean showit;
 
     public String getId() {
         return id;
@@ -52,14 +29,6 @@ public class PredefinedMetapath {
 
     public void setDataset(String dataset) {
         this.dataset = dataset;
-    }
-
-    public List<String> getMetapath() {
-        return metapath;
-    }
-
-    public void setMetapath(List<String> metapath) {
-        this.metapath = metapath;
     }
 
     public String getKey() {
@@ -78,107 +47,39 @@ public class PredefinedMetapath {
         this.description = description;
     }
 
-    public Analytics getAnalytics() {
-        return analytics;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public void setAnalytics(Analytics analytics) {
-        this.analytics = analytics;
+    public List<String> getEntities() {
+        return entities;
     }
 
-    @Override
-    public String toString() {
-        return "Predefined metapath for dataset '" + this.dataset + "' - " + this.description + " - " + this.metapathAbbreviation + " - key: " + this.key + " - analytics: [" + this.analytics.toString() + "]";
+    public void setEntities(List<String> entities) {
+        this.entities = entities;
     }
 
-    public static class Analytics {
-        private TimesUsed timesUsed;
-        private int rank;
+    public String getMetapath() {
+        return metapath;
+    }
 
-        public Analytics() {
+    public void setMetapath(String metapath) {
+        this.metapath = metapath;
+    }
 
-        }
+    public Integer getTimesUsed() {
+        return timesUsed;
+    }
 
-        public Analytics(TimesUsed timesUsed, int rank) {
-            this.timesUsed=timesUsed;
-            this.rank=rank;
-        }
+    public void setTimesUsed(Integer timesUsed) {
+        this.timesUsed = timesUsed;
+    }
 
-        public TimesUsed getTimesUsed() {
-            return timesUsed;
-        }
+    public Boolean getShowit() {
+        return showit;
+    }
 
-        public void setTimesUsed(TimesUsed timesUsed) {
-            this.timesUsed = timesUsed;
-        }
-
-        public int getRank() {
-            return rank;
-        }
-
-        public void setRank(int rank) {
-            this.rank = rank;
-        }
-
-        @Override
-        public String toString() {
-            return "rank: " + this.rank + ", counts per analysis: [" + this.timesUsed.toString() + "]";
-        }
-
-        public static class TimesUsed {
-
-            private int ranking;
-            private int simJoin;
-            private int simSearch;
-            private int communityDetection;
-
-            public TimesUsed() {
-
-            }
-
-            public TimesUsed(int ranking, int simJoin, int simSearch, int communityDetection) {
-                this.ranking=ranking;
-                this.simJoin=simJoin;
-                this.simSearch=simSearch;
-                this.communityDetection=communityDetection;
-            }
-
-            public int getRanking() {
-                return ranking;
-            }
-
-            public void setRanking(int ranking) {
-                this.ranking = ranking;
-            }
-
-            public int getSimJoin() {
-                return simJoin;
-            }
-
-            public void setSimJoin(int simJoin) {
-                this.simJoin = simJoin;
-            }
-
-            public int getSimSearch() {
-                return simSearch;
-            }
-
-            public void setSimSearch(int simSearch) {
-                this.simSearch = simSearch;
-            }
-
-            public int getCommunityDetection() {
-                return communityDetection;
-            }
-
-            public void setCommunityDetection(int communityDetection) {
-                this.communityDetection = communityDetection;
-            }
-
-            @Override
-            public String toString() {
-                return "ranking: " + this.ranking + ", similarity join: " + this.simJoin + ", similarity search: " + this.simSearch + ", community detection: " + this.communityDetection;
-            }
-        }
+    public void setShowit(Boolean showit) {
+        this.showit = showit;
     }
 }

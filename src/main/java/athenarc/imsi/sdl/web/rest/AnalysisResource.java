@@ -73,10 +73,7 @@ public class AnalysisResource {
             analysisService.submit(
                 id,
                 config.getAnalysis(),
-                config.getMetapath(),
-                config.getJoinpath(),
-                config.getConstraints(),
-                config.getConstraintsExpression(),
+                config.getQueries(),
                 config.getPrimaryEntity(),
                 config.getSearchK(),
                 config.getT(),
@@ -137,24 +134,10 @@ public class AnalysisResource {
             response.append("completed", completed);
 
             // form description of analysis
-            String description = RandomUtil.getAnalysisDescription(config);
+            String description = RandomUtil.getAnalysisDescription(config, false);
             response.append("description", description);
 
-            Document analysesParameters = null;
-            analysesParameters = FileUtil.getAnalysesParameters(config);
-
-            Document query = (Document) config.get("query");
-            analysesParameters.append("constraintsExpression", (String) query.get("constraintsExpression"));
-
             String[] tokens = lastLine.split("\t");
-
-            if (tokens[0].equals("Exit Code") && tokens[1].equals("0")) {
-                analysesParameters.append("status", "COMPLETE");
-            } else {
-                analysesParameters.append("status", "PENDING");
-            }
-            log.debug(analysesParameters.toString());
-            response.append("analysesParameters", analysesParameters);
 
             if (tokens[0].equals("Exit Code") && !tokens[1].equals("0")) {
 
@@ -208,6 +191,7 @@ public class AnalysisResource {
         log.debug("analysis/get : {}", id, page);
 
         String logfile = FileUtil.getLogfile(id);
+
         try {
             Document logInfo = FileUtil.parseLogfile(logfile);
             String lastLine = (String) logInfo.get("lastLine");
@@ -264,8 +248,14 @@ public class AnalysisResource {
                     }
                 }
 
+                // send description in the response to include it in the results
+                String conf = FileUtil.readJsonFile(FileUtil.getConfFile(id));
+                Document config = Document.parse(conf);
+                String description = RandomUtil.getAnalysisDescription(config, true);
+
                 response.append("id", id)
                     .append("analysis", analysis)
+                    .append("description", description)
                     .append("_meta", meta)
                     .append("docs", docs);
 

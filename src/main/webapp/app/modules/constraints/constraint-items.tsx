@@ -72,6 +72,7 @@ export class ConstraintItems extends React.Component<IConstraintItemProps> {
                         handleMultipleAddition={this.props.handleMultipleAddition}
                     />
                     : <ConstraintItemDescription
+                        key={ `${entity}_${field}_${index}` }
                         entity={entity}
                         field={field}
                         data={condition}
@@ -79,7 +80,7 @@ export class ConstraintItems extends React.Component<IConstraintItemProps> {
                         handleRemoval={this.props.handleRemoval.bind(this)}
                     />
             })
-        }).filter(el=>!!el).forEach((element, index)=>{
+        }).filter(el => !!el).forEach((element, index)=>{
             if (index!==0) {
                 constraintItemContents.push(<hr/>);
             }

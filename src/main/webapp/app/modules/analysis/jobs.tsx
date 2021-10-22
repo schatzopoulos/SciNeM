@@ -5,8 +5,7 @@ import { IRootState } from 'app/shared/reducers';
 import _ from 'lodash';
 import { getJob, getMoreResults, getResults, getStatus } from './jobs.reducer';
 import ResultsPanel from './results/results';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { Spinner } from 'reactstrap';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -76,30 +75,6 @@ export class Jobs extends React.Component<IHomeProps> {
         });
     }
 
-    getDescriptionString() {
-        if (this.props.analysesParameters) {
-            const metapath = this.props.analysesParameters.metapath;
-            const analyses = this.props.analysesParameters.analyses.join(', ');
-            const constraints = this.props.analysesParameters.constraintsExpression;
-
-            let statusString = '';
-            switch (this.props.analysesParameters.status) {
-                case 'PENDING':
-                    statusString = 'Executing';
-                    break;
-                case 'COMPLETE':
-                    statusString = 'Completed';
-                    break;
-                default:
-                    statusString = 'Unknown state when';
-            }
-
-            return `${statusString} ${analyses} for metapath ${metapath} and constraint(s): ${constraints}.`;
-        } else {
-            return '';
-        }
-    }
-
     render() {
 
         return (
@@ -159,18 +134,23 @@ export class Jobs extends React.Component<IHomeProps> {
                                     (this.props.loading) &&
                                     <Row className="small-grey text-center">
                                         <Col>
-                                            {this.getDescriptionString()}
-                                            {this.props.progress && this.props.progress<100?<Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon icon={faTimes}/> Cancel analysis</Button>:''}
+                                            {!_.isEmpty(this.props.description)
+                                                ? this.props.description
+                                                : <span>
+                                                    <Spinner size='sm' cllassName="small-grey"/> Loading analysis description...
+                                                </span>
+                                            }
+                                            {/* {this.props.progress && this.props.progress<100?<Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon icon={faTimes}/> Cancel analysis</Button>:''} */}
                                         </Col>
                                     </Row>
                                 }
                                 {
-                                    (this.props.loading) && <Progress animated color="info"
-                                                                      value={this.props.progress}>{this.props.progressMsg}</Progress>
+                                    (this.props.loading) && 
+                                    <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
                                 }
                                 <ResultsPanel
                                     uuid={this.props.uuid}
-                                    description={this.getDescriptionString()}
+                                    description={this.props.description}
                                     results={this.props.results}
                                     analysis={this.props.analysis}
                                     analysisId={this.props.uuid}
@@ -192,7 +172,6 @@ const mapStateToProps = (storeState: IRootState) => ({
     progress: storeState.jobs.progress,
     progressMsg: storeState.jobs.progressMsg,
     description: storeState.jobs.description,
-    analysesParameters: storeState.jobs.analysesParameters,
     error: storeState.jobs.error,
     results: storeState.jobs.results,
     status: storeState.jobs.status,

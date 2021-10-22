@@ -41,7 +41,7 @@ class Recommendation extends React.Component<RecommendationProps> {
     const itemsToBeRendered = [];
     recommendationEntityBoxes.forEach((entityBox, index)=> {
       if (index !== 0) {
-        itemsToBeRendered.push(<EntityConnector recommendation={true} emphasize={this.state.focused} />);
+        itemsToBeRendered.push(<EntityConnector key={index} recommendation={true} emphasize={this.state.focused} />);
       }
         itemsToBeRendered.push(entityBox);
     });
