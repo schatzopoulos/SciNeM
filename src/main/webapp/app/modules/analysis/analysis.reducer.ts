@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
 import _ from 'lodash';
-import { metapathToString } from '../../shared/util/metapath-utils';
+import { metapathToString, getMetapathEntities } from '../../shared/util/metapath-utils';
 import { generateGroupsOfDisjunctions, constraintsSummary } from 'app/shared/util/constraint-utils';
 
 const analysisAPIUrl = 'api/analysis';
@@ -19,7 +19,6 @@ const initialState = {
   progress: 0 as number,
   progressMsg: null as string,
   description: null as string,
-  analysesParameters: null as any,
   error: null as string,
   uuid: null as string,
   analysis: null as string,
@@ -76,13 +75,13 @@ export default (state: AnalysisState = initialState, action): AnalysisState => {
     }
     case SUCCESS(ACTION_TYPES.GET_STATUS): {
       const data = action.payload.data;
+
       return {
         ...state,
         loading: Object.values(data.completed).some(v => v === false), // when all analysis tasks have been completed
         status: data.completed,
         progress: data.progress,
         progressMsg: `${data.stage}: ${data.step}`,
-        analysesParameters: data.analysesParameters,
         description: data.description,
         error: null
       };
@@ -193,6 +192,7 @@ function formatQueries(queries) {
     const metapathStr = metapathToString(metapath);
     return {
       metapath: metapathStr,
+      entities: getMetapathEntities(metapath),
       joinpath: getJoinPath(metapathStr),
       constraints: formatConstraints(constraints),
       constraintsExpression: getConstraintsExpression(constraints)
@@ -279,7 +279,7 @@ export const analysisRun = (
   };
 
   payload['queries'] = formatQueries(queries);
-  console.warn(JSON.stringify(payload));
+  // console.warn(JSON.stringify(payload));
 
   return {
     type: ACTION_TYPES.ANALYSIS_SUBMIT,

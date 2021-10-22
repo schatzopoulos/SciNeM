@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.bson.Document;
@@ -291,25 +290,6 @@ public final class FileUtil {
         fis.read(data);
         fis.close();
         return new String(data, "UTF-8");
-    }
-
-    public static Document getAnalysesParameters(final Document config) {
-        ArrayList<String> ananyses = (ArrayList<String>) config.get("analyses");
-
-        Document query = (Document) config.get("query");
-        String metapath = (String) query.get("metapath");
-
-        ArrayList<String> constraints = new ArrayList<>();
-        for (final Map.Entry<String, Object> entry : ((Document) query.get("constraints")).entrySet()) {
-            constraints.add(entry.getKey() + ": " + ((String) entry.getValue()));
-        }
-
-        Document analysisParameters = new Document();
-        analysisParameters.append("analyses", ananyses);
-        analysisParameters.append("metapath", metapath);
-        analysisParameters.append("constraints", constraints);
-
-        return analysisParameters;
     }
 
     public static List<Long> getCommunityPositions(String file) throws IOException {

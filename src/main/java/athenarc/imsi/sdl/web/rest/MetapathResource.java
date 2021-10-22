@@ -1,7 +1,8 @@
 package athenarc.imsi.sdl.web.rest;
 
-import athenarc.imsi.sdl.service.MetapathService;
-import io.swagger.annotations.*;
+import java.util.Arrays;
+import java.util.List;
+
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +14,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.LinkedList;
-import java.util.List;
+import athenarc.imsi.sdl.config.Constants;
+import athenarc.imsi.sdl.service.MetapathService;
+import athenarc.imsi.sdl.service.util.FileUtil;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 @RestController
 @RequestMapping("/api/metapath")
@@ -34,24 +40,25 @@ public class MetapathResource {
         }
     )
     @GetMapping(value = "/predefined", produces = "application/json;charset=UTF-8")
-//    public SamplePredefinedMetapath getPredefinedMetapaths(@ApiParam(value="The dataset for which to search predefined metapaths", required = true) @RequestParam String dataset) {
     public Document getPredefinedMetapaths(@ApiParam(value="The dataset for which to search predefined metapaths", required = true) @RequestParam String dataset) {
-        Document result = new Document();
-        List<Document> predefinedMetapaths;
 
-        result.append("dataset", dataset);
-        if (dataset.trim().length() == 0) {
-            predefinedMetapaths = new LinkedList<>();
-        } else {
-            predefinedMetapaths = metapathService.getPredefinedMetapaths(dataset);
+        // check if this is a valid dataset
+        String[] availableDatasets = FileUtil.findSubdirectories(Constants.DATA_DIR);
+        if (!Arrays.asList(availableDatasets).contains(dataset)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dataset '" + dataset + "' does not exist");
         }
+
+        List<Document> predefinedMetapaths = metapathService.getPredefinedMetapaths(dataset);
+        
         if (predefinedMetapaths == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dataset '"+dataset+"' does not exist");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No predfined metapath exist for this dataset");
         }
-        result.append("predefinedMetapaths", predefinedMetapaths);
+        
+        Document response = new Document()
+            .append("dataset", dataset)
+            .append("predefinedMetapaths", predefinedMetapaths);
 
-//        SamplePredefinedMetapath result2 = new SamplePredefinedMetapath("a","b");
-        return result;
+        return response;
     }
 
     @ApiOperation(value="This method is used to retrieve the description for a specific metapath, of a specific dataset")
@@ -66,17 +73,21 @@ public class MetapathResource {
     public Document getMetapathDescription(
         @ApiParam(value="The dataset for which to search predefined metapaths", required=true) @RequestParam String dataset,
         @ApiParam(value="Full name of entities that define the metapath. The metapath is defined by the order of entity definition", required = true) @RequestParam List<String> entities) {
-        Document metapathInfo = new Document();
 
-        metapathInfo.append("dataset", dataset);
-        metapathInfo.append("entities", entities);
+        String[] availableDatasets = FileUtil.findSubdirectories(Constants.DATA_DIR);
+        if (!Arrays.asList(availableDatasets).contains(dataset)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dataset '" + dataset + "' does not exist");
+        }
 
         String retrievedDescription = metapathService.getMetapathDescription(dataset, entities);
         if (retrievedDescription == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dataset '"+dataset+"' does not exist");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No description exists for this metapath");
         }
-        metapathInfo.append("metapathDescription", retrievedDescription);
 
+        Document metapathInfo = new Document()
+            .append("dataset", dataset)
+            .append("entities", entities)
+            .append("metapathDescription", retrievedDescription);
         return metapathInfo;
     }
 }

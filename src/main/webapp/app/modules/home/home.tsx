@@ -573,10 +573,6 @@ export class Home extends React.Component<IHomeProps> {
 
         this.props.analysisRun(
             analysisType,
-            // metapathToString(this.getCurrentMetapath()),
-            // this.getJoinPath(),
-            // this.getCurrentConstraints(),
-            // this.getConstraintsExpression(),
             this.state.queries,
             this.getPrimaryEntity(),
             this.getCurrentDataset(),
@@ -750,34 +746,6 @@ export class Home extends React.Component<IHomeProps> {
         const newState = { ...this.state };
         newState[e.target.id] = e.target.value;
         this.setState(newState);
-    }
-
-    getDescriptionString() {
-        if (this.props.analysesParameters) {
-            const metapath = this.props.analysesParameters.metapath;
-            const analyses = this.props.analysesParameters.analyses.join(', ');
-            const constaintDescriptions = {};
-            Object.keys(this.getCurrentConstraints()).forEach((entity, index) => {
-                constaintDescriptions[entity] = generateGroupsOfDisjunctions(this.getCurrentConstraints()[entity], `${entity}.`);
-            });
-            const constraints = constraintsSummary(constaintDescriptions);
-
-            let statusString = '';
-            switch (this.props.analysesParameters.status) {
-                case 'PENDING':
-                    statusString = 'Executing';
-                    break;
-                case 'COMPLETE':
-                    statusString = 'Completed';
-                    break;
-                default:
-                    statusString = 'Unknown state when';
-            }
-
-            return `${statusString} ${analyses} for metapath ${metapath} and constraint(s): ${constraints}.`;
-        } else {
-            return '';
-        }
     }
 
     setInterpretation(dataset, metapath, description) {
@@ -1121,7 +1089,12 @@ export class Home extends React.Component<IHomeProps> {
                                     (this.props.loading) &&
                                     <Row className="small-grey text-center">
                                         <Col>
-                                            {this.getDescriptionString()}
+                                            {!_.isEmpty(this.props.description)
+                                                ? this.props.description
+                                                : <span>
+                                                    <Spinner size='sm' cllassName="small-grey"/> Loading analysis description...
+                                                </span>
+                                            }
                                             {/* {this.props.progress && this.props.progress < 100 ?
                                                 <Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon
                                                     icon={faTimes} /> Cancel analysis</Button> : ''} */}
@@ -1134,7 +1107,7 @@ export class Home extends React.Component<IHomeProps> {
                                 }
                                 <ResultsPanel
                                     uuid={this.props.uuid}
-                                    description={this.getDescriptionString()}
+                                    description={this.props.description}
                                     results={this.props.results}
                                     analysis={this.props.analysis}
                                     analysisId={this.props.uuid}
@@ -1156,7 +1129,6 @@ const mapStateToProps = (storeState: IRootState) => ({
     progress: storeState.analysis.progress,
     progressMsg: storeState.analysis.progressMsg,
     description: storeState.analysis.description,
-    analysesParameters: storeState.analysis.analysesParameters,
     error: storeState.analysis.error,
     results: storeState.analysis.results,
     uuid: storeState.analysis.uuid,

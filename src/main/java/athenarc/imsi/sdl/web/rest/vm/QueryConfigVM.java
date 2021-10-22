@@ -26,6 +26,8 @@ public class QueryConfigVM {
 
         public String constraintsExpression;
 
+        public ArrayList<String> entities;
+
         public String getMetapath() {
             return metapath;
         }
@@ -56,6 +58,14 @@ public class QueryConfigVM {
 
         public void setConstraintsExpression(String constraintsExpression) {
             this.constraintsExpression = constraintsExpression;
+        }
+
+        public ArrayList<String> getEntities() {
+            return entities;
+        }
+
+        public void setEntities(ArrayList<String> entities) {
+            this.entities = entities;
         }
         
     }

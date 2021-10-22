@@ -2,6 +2,7 @@ package athenarc.imsi.sdl.service.util;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -55,19 +56,26 @@ public final class RandomUtil {
         return generateRandomAlphanumericString();
     }
 
-    public static String getAnalysisDescription(final Document config) {
-        String description = "Executing ";
+    public static String getAnalysisDescription(final Document config, boolean completed) {
+        String description = (completed) ? "Completed " : "Executing ";
 
         description += String.join(", ", (ArrayList<String>) config.get("analyses"));
+        description += " with metapath(s): ";
 
-        final Document query = (Document) config.get("query");
-        description += " with metapath " + (String) query.get("metapath");
+        final List<Document> queries = (List<Document>) config.get("queries");
+        List<String> metapathDescriptions = new ArrayList<>();
+        for (Document query : queries) {
 
-        final ArrayList<String> constraints = new ArrayList<>();
-        for (final Map.Entry<String, Object> entry : ((Document)query.get("constraints")).entrySet()) {
-            constraints.add(entry.getKey() + ": " + ((String)entry.getValue()));
+            String descr = (String) query.get("metapath");
+
+            final ArrayList<String> constraints = new ArrayList<>();
+            for (final Map.Entry<String, Object> entry : ((Document)query.get("constraints")).entrySet()) {
+                constraints.add(entry.getKey().trim() + "." + ((String)entry.getValue()).trim());
+            }
+            descr += " { " + String.join(", ", constraints) + " }";
+            metapathDescriptions.add(descr);
         }
-        description += " and constraint(s) " + String.join(", ", constraints);
+        description += String.join(", ", metapathDescriptions);
 
         return description;
     }
