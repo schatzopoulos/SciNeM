@@ -20,7 +20,6 @@ import java.util.Set;
 import org.bson.Document;
 
 import athenarc.imsi.sdl.config.Constants;
-import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM.Query;
 
 /**
  * Utility class for file and dir management.
@@ -121,7 +120,7 @@ public final class FileUtil {
         ArrayList<String> analyses,
         String outputDir,
         String hdfsOutputDir,
-        ArrayList<Query> queries,
+        List<Document> queries,
         String primaryEntity,
         int searchK,
         int t,
@@ -196,16 +195,16 @@ public final class FileUtil {
 
         // Query specific params
         config.put("queries", queries);
-        List<Document> queriesJson = new ArrayList<>();
-        for (Query query : queries) {
-            Document q = new Document();
-            q.put("metapath", query.getMetapath());
-            q.put("constraints", query.getConstraints());
-            q.put("joinpath", query.getJoinpath());
-            q.put("constraintsExpression", query.getConstraintsExpression());
-            queriesJson.add(q);
-        }
-        config.put("queries", queriesJson);
+        // List<Document> queriesJson = new ArrayList<>();
+        // for (Query query : queries) {
+        //     Document q = new Document();
+        //     q.put("metapath", query.getMetapath());
+        //     q.put("constraints", query.getConstraints());
+        //     q.put("joinpath", query.getJoinpath());
+        //     q.put("constraintsExpression", query.getConstraintsExpression());
+        //     queriesJson.add(q);
+        // }
+        config.put("queries", queries);
 
         // write json to config file
         String configFile = outputDir + "/" + Constants.CONFIG_FILE;
