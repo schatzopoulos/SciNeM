@@ -109,8 +109,8 @@ export class Jobs extends React.Component<IHomeProps> {
                             {(this.props.error || this.props.description || this.props.loading) &&
                             <Card className={'my-4 pt-0'}>
                                 <Row className={'justify-content-end'}>
-                                    <h5 className={'p-2'}><strong className={'text-muted'}>Analysis
-                                        ID: {this.props.uuid}</strong></h5>
+                                    <h6 className={'p-2'}><strong className={'text-muted'}>Analysis
+                                        id: {this.props.uuid}</strong></h6>
                                 </Row>
                                 <br />
                                 {
