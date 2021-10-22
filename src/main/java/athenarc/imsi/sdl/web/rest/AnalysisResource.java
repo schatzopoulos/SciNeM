@@ -157,7 +157,7 @@ public class AnalysisResource {
             } else if (tokens.length == 3) {
                 response.append("stage", tokens[0])
                     .append("step", tokens[2])
-                    .append("progress", analysisService.getProgress(analyses, (Integer) logInfo.get("stageNum"), Integer.parseInt(tokens[1])));
+                    .append("progress", analysisService.getProgress(analyses, (Integer) logInfo.get("stageNum"), Float.parseFloat(tokens[1])));
 
                 // in case logfile is still empty
             } else {

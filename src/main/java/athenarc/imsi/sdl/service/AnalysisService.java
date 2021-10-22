@@ -175,7 +175,7 @@ public class AnalysisService {
         return docs;
     }
 
-    public double getProgress(ArrayList<String> analyses, int stage, int step) {
+    public double getProgress(ArrayList<String> analyses, int stage, float step) {
         int analysesSize = analyses.size();
 
         // do count combinations Ranking-CD and CD-Ranking as extra analyses in progress
