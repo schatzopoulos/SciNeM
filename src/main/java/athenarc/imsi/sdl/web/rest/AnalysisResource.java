@@ -69,11 +69,34 @@ public class AnalysisResource {
 
         try {
 
+            // update predefined metapaths
+            for (QueryConfigVM.Query query : config.getQueries()) {
+                analysisService.updatePredifinedMetapaths(
+                    config.getDataset(), 
+                    query.getMetapath(), 
+                    config.getSelectField(), 
+                    query.getEntities()
+                );
+            }
+
+            // INFO: copy query data; needed as services should not depend on web resources like QueryConfigVM
+            List<Document> queries = new ArrayList<>();
+            for (QueryConfigVM.Query query : config.getQueries()) {
+                Document doc = new Document();
+                doc.append("metapath", query.getMetapath());
+                doc.append("joinpath", query.getJoinpath());
+                doc.append("constraints", query.getConstraints());
+                doc.append("constraintsExpression", query.getConstraintsExpression());
+                doc.append("entities", query.getEntities());
+
+                queries.add(doc);
+            }
+
             // run async method from service
             analysisService.submit(
                 id,
                 config.getAnalysis(),
-                config.getQueries(),
+                queries,
                 config.getPrimaryEntity(),
                 config.getSearchK(),
                 config.getT(),
@@ -157,7 +180,7 @@ public class AnalysisResource {
             } else if (tokens.length == 3) {
                 response.append("stage", tokens[0])
                     .append("step", tokens[2])
-                    .append("progress", analysisService.getProgress(analyses, (Integer) logInfo.get("stageNum"), Integer.parseInt(tokens[1])));
+                    .append("progress", analysisService.getProgress(analyses, (Integer) logInfo.get("stageNum"), Float.parseFloat(tokens[1])));
 
                 // in case logfile is still empty
             } else {

@@ -176,7 +176,7 @@ function getConstraintsExpression(constraints) {
 
   Object.keys(constraints).forEach(entity => {
     constaintDescriptions[entity] = generateGroupsOfDisjunctions(constraints[entity], `${entity}.`);
-    console.warn(constaintDescriptions[entity]);
+    // console.warn(constaintDescriptions[entity]);
   });
 
   return constraintsSummary(constaintDescriptions);

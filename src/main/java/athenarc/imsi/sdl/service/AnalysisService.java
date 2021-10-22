@@ -27,7 +27,6 @@ import athenarc.imsi.sdl.config.Constants;
 import athenarc.imsi.sdl.domain.PredefinedMetapath;
 import athenarc.imsi.sdl.repository.PredefinedMetapathRepository;
 import athenarc.imsi.sdl.service.util.FileUtil;
-import athenarc.imsi.sdl.web.rest.vm.QueryConfigVM.Query;
 
 @Service
 public class AnalysisService {
@@ -38,7 +37,7 @@ public class AnalysisService {
     private final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
     @Async
-    public void submit(String id, ArrayList<String> analyses, ArrayList<Query> queries, String primaryEntity, int searchK, int t, int targetId, String dataset,
+    public void submit(String id, ArrayList<String> analyses, List<Document> queries, String primaryEntity, int searchK, int t, int targetId, String dataset,
                        String selectField, int edgesThreshold, double prAlpha, double prTol, int simMinValues,
                        String commAlgorithm, double commThreshold, int commStopCriterion, int commMaxSteps, int commNumOfCommunities, double commRatio) throws java.io.IOException, InterruptedException {
 
@@ -49,10 +48,6 @@ public class AnalysisService {
 
         String config = FileUtil.writeConfig(analyses, outputDir, hdfsOutputDir, queries, primaryEntity, searchK, t,
                 targetId, dataset, selectField, edgesThreshold, prAlpha, prTol, simMinValues, commAlgorithm, commThreshold, commStopCriterion, commMaxSteps, commNumOfCommunities, commRatio);
-
-
-        // update predifined metapath counts
-        this.updatePredifinedMetapaths(dataset, selectField, queries);
 
         ProcessBuilder pb = new ProcessBuilder();
         pb.command("/bin/bash", Constants.WORKFLOW_DIR + "analysis/analysis.sh", config);
@@ -175,7 +170,7 @@ public class AnalysisService {
         return docs;
     }
 
-    public double getProgress(ArrayList<String> analyses, int stage, int step) {
+    public double getProgress(ArrayList<String> analyses, int stage, float step) {
         int analysesSize = analyses.size();
 
         // do count combinations Ranking-CD and CD-Ranking as extra analyses in progress
@@ -205,27 +200,23 @@ public class AnalysisService {
         return communityCounts;
     }
 
-    private void updatePredifinedMetapaths(String dataset, String key, ArrayList<Query> queries) {
+    public void updatePredifinedMetapaths(String dataset, String metapathToUpdate, String key, List<String> entities) {
 
-        for (Query query : queries) {
-            
-            String metapathToUpdate = query.getMetapath();
-
-            PredefinedMetapath metapath = predefinedMetapathRepository.findFirstByDatasetAndMetapath(dataset, metapathToUpdate);
-            if (metapath != null) {
-                metapath.setTimesUsed(metapath.getTimesUsed() + 1);
-                predefinedMetapathRepository.save(metapath);
-            } else {
-                PredefinedMetapath newMetapath = new PredefinedMetapath();
-                newMetapath.setDataset(dataset);
-                newMetapath.setKey(key);
-                newMetapath.setMetapath(metapathToUpdate);
-                newMetapath.setEntities(query.getEntities());
-                newMetapath.setDescription("");
-                newMetapath.setTimesUsed(1);
-                newMetapath.setShowit(false);
-                predefinedMetapathRepository.save(newMetapath);    
-            }
+        PredefinedMetapath metapath = predefinedMetapathRepository.findFirstByDatasetAndMetapath(dataset, metapathToUpdate);
+        if (metapath != null) {
+            metapath.setTimesUsed(metapath.getTimesUsed() + 1);
+            predefinedMetapathRepository.save(metapath);
+        } else {
+            PredefinedMetapath newMetapath = new PredefinedMetapath();
+            newMetapath.setDataset(dataset);
+            newMetapath.setKey(key);
+            newMetapath.setMetapath(metapathToUpdate);
+            newMetapath.setEntities(entities);
+            newMetapath.setDescription("");
+            newMetapath.setTimesUsed(1);
+            newMetapath.setShowit(false);
+            predefinedMetapathRepository.save(newMetapath);    
         }
     }
+    
 }
