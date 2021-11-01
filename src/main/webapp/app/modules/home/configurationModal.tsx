@@ -15,6 +15,7 @@ import {
 } from 'reactstrap';
 import './feedback.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Link } from 'react-router-dom';
 
 
 const ConfigurationModal = (props) => {
@@ -160,13 +161,14 @@ const ConfigurationModal = (props) => {
                         <Col md='3'>
                             <Card className={'configuration-card'}>
                                 <h5>Community Detection</h5>
-
-                                <Label for="commAlgorithm">
-                                    Algorithm <FontAwesomeIcon
-                                        style={{ color: '#17a2b8' }}
-                                        icon="question-circle"
-                                        title="Community Detection Algorithm to be used." />
-                                </Label>
+                                <span>
+                                    <Label for="commAlgorithm">
+                                        Algorithm <FontAwesomeIcon
+                                            style={{ color: '#17a2b8' }}
+                                            icon="question-circle"
+                                            title="Community Detection Algorithm to be used." />
+                                    </Label> <a className='pull-right' href="https://github.com/schatzopoulos/SciNeM-workflows/blob/master/community/README.md" target="_blank" rel="noopener noreferrer"><small>[more details]</small></a>
+                                </span>
                                 <Input value={props.commAlgorithm} type="select" name="commAlgorithm" id="commAlgorithm"
                                     onChange={handleAdvancedOptions}>
                                     {
@@ -201,7 +203,7 @@ const ConfigurationModal = (props) => {
                                         Stop Criterion <FontAwesomeIcon
                                             style={{ color: '#17a2b8' }}
                                             icon="question-circle"
-                                            title="the number of times that a vertex can have the same community affiliation(s) before it stops been included in the remaining supersteps of the LPA (OLPA).
+                                            title="The number of times that a vertex can have the same community affiliation(s) before it stops been included in the remaining supersteps of the LPA (OLPA).
                                             " />
                                     </Label>
                                     <Input id="commStopCriterion" value={props.commStopCriterion}
