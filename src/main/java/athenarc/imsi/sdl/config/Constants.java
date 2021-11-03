@@ -1,7 +1,5 @@
 package athenarc.imsi.sdl.config;
 
-import org.springframework.beans.factory.annotation.Value;
-
 /**
  * Application constants.
  */
@@ -10,15 +8,12 @@ public final class Constants {
     // Regex for acceptable logins
     public static final String LOGIN_REGEX = "^[_.@A-Za-z0-9-]*$";
     
-    @Value("${namenode}")
-    private static String namenode;
-
     public static final String SYSTEM_ACCOUNT = "system";
     public static final String DEFAULT_LANGUAGE = "en";
     public static final String ANONYMOUS_USER = "anonymoususer";
     
     public static final String BASE_PATH = "/dataX/SciNeM/SciNeM-results";
-		public static final String HDFS_BASE_PATH = "hdfs://" + namenode + "/SciNeM-results";
+		public static final String HDFS_BASE_PATH = "hdfs://172.16.1.156:9000/SciNeM-results";
 
     public static final String HIN_OUT = "HIN";
     public static final String JOIN_HIN_OUT = "JOIN_HIN";
@@ -40,7 +35,7 @@ public final class Constants {
     public static final String CONFIG_FILE = "config.json";
 
     public static final String DATA_DIR = "/dataX/SciNeM/SciNeM-data/";
-		public static final String HDFS_DATA_DIR = "hdfs://" + namenode + "/SciNeM-data/";
+		public static final String HDFS_DATA_DIR = "hdfs://172.16.1.156:9000/SciNeM-data/";
     public static final String WORKFLOW_DIR = "/dataX/SciNeM/SciNeM-workflows/";
     public static final int MAX_THREADS = 10;
 
