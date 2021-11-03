@@ -95,6 +95,9 @@ public class AnalysisService {
         int totalRecords = communityPositions.size();
         int totalPages = (int) Math.ceil(((double) totalRecords) / ((double) Constants.PAGE_SIZE));
 
+System.out.println(totalRecords);
+System.out.print(totalPages);
+
         String[] headers = FileUtil.getHeaders(analysisFile);
         int firstCommunityIndex = (page - 1) * Constants.PAGE_SIZE;
 
@@ -109,7 +112,7 @@ public class AnalysisService {
             long communityPositionLimit = reachEnd ? -1 : communityPositions.get(firstCommunityIndex + Constants.PAGE_SIZE);
 
             RandomAccessFile communityResultsFile = new RandomAccessFile(analysisFile, "r");
-            // Set<String> communityIds = new HashSet<>();
+
             long currentPosition;
             String line = null;
             communityResultsFile.seek(communityPositions.get(firstCommunityIndex));
@@ -127,7 +130,7 @@ public class AnalysisService {
                     }
                 }
             } while (((currentPosition < communityPositionLimit) || reachEnd) && (line != null));
-
+            communityResultsFile.close();
         }
 
         AnalysisService.getMeta(meta, totalRecords, totalPages, page, headers);

@@ -304,6 +304,8 @@ public final class FileUtil {
                 }
             }
         } while (line!=null);
+        
+        communityFile.close();
 
         return communityPositions;
     }
