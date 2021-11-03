@@ -137,7 +137,7 @@ export class Jobs extends React.Component<IHomeProps> {
                                             {!_.isEmpty(this.props.description)
                                                 ? this.props.description
                                                 : <span>
-                                                    <Spinner size='sm' cllassName="small-grey"/> Loading analysis description...
+                                                    <Spinner size='sm' className="small-grey"/> Loading analysis description...
                                                 </span>
                                             }
                                             {/* {this.props.progress && this.props.progress<100?<Button size={'sm'} className={'badge btn-danger'}><FontAwesomeIcon icon={faTimes}/> Cancel analysis</Button>:''} */}
