@@ -1,6 +1,3 @@
-[submodule "libs/EntitySimilarity"]
-	path = libs/EntitySimilarity
-	url = https://github.com/schatzopoulos/EntitySimilarity.git
 [submodule "libs/SciNeM-workflows"]
 	path = libs/SciNeM-workflows
 	url = https://github.com/schatzopoulos/SciNeM-workflows.git
