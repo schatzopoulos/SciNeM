@@ -134,13 +134,6 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
     }
 
     handleSelectionChange(selections) {
-        // const result = this.props.results[this.state.activeAnalysis];
-        // const selectedEntries = selections.map(selectionIndex => {
-        //     return result.docs[selectionIndex];
-        // });
-        // this.setState({
-        //     selectedEntries
-        // });
         this.setState({
             selectedEntries: selections
         });
@@ -253,30 +246,10 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         resultPanel = '';
                         break;
                 }
-                // if (this.state.activeAnalysis === 'Ranking') {
-                //     resultPanel = <ResultsTable
-                //         docs={result.docs}
-                //         headers={result.meta.headers}
-                //         selections={this.state.selectedEntries}
-                //         communityView={false}
-                //         handleSelectionChange={this.handleSelectionChange.bind(this)}
-                //     />;
-                // } else if (this.state.activeAnalysis === 'Community Detection' || this.state.activeAnalysis === 'Community Detection - Ranking') {
-                //     resultPanel = <ResultsTable
-                //         docs={result.docs}
-                //         headers={result.meta.headers}
-                //         selections={this.state.selectedEntries}
-                //         communityView={true}
-                //         handleSelectionChange={this.handleSelectionChange.bind(this)}
-                //     />;
-                // } else {
-                //     resultPanel = '';
-                // }
             } else {
                 resultPanel = '';
             }
-            // const totalCommunities = (_.get(result, 'meta.community_counts')) ?
-            //     <span> / {result.meta.community_counts} communities found in total</span> : '';
+
             return (<div>
                 <h2>Results</h2>
                 <p>{this.props.description}</p>

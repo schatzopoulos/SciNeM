@@ -210,8 +210,11 @@ public class AnalysisResource {
     public Document get(
         @ApiParam(value = "The ID that was assigned on the analysis in question, during submission", required = true) @RequestParam String id,
         @ApiParam(value = "The type of the analysis", required = true) @RequestParam String analysis,
-        @ApiParam(value = "A value N greater or equal to 1 that is used to retrieve the [(N-1)*50,N*50) results") @RequestParam(required = false) Integer page) {
-        log.debug("analysis/get : {}", id, page);
+        @ApiParam(value = "A value N greater or equal to 1 that is used to retrieve the [(N-1)*50,N*50) results") @RequestParam(required = false, defaultValue = "1") Integer page, 
+        @ApiParam(value = "Applies hierarchical results: indicates the hierarchy level") @RequestParam(required = false, defaultValue = "1") Integer level, 
+        @ApiParam(value = "Applies hierarchical results: indicates the community for which its members are requested") @RequestParam(required = false) Integer communityId
+    ) {
+        log.debug("analysis/get : {}", id, analysis, page);
 
         String logfile = FileUtil.getLogfile(id);
 
@@ -237,7 +240,7 @@ public class AnalysisResource {
                 Document meta = new Document();
                 List<Document> docs;
                 if (analysis.equals("Community Detection") || analysis.equals("Community Detection - Ranking")) {
-                    docs = analysisService.getCommunityResults(resultsFile, page, meta);
+                    docs = analysisService.getCommunityResults(resultsFile, page, level, communityId, meta);
                 } else {
                     docs = analysisService.getResults(resultsFile, page, meta);
                     if (analysis.contains("Community")) {
