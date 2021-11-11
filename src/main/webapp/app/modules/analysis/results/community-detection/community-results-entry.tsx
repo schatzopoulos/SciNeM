@@ -52,7 +52,7 @@ const CommunityResultsEntry = props => {
                 <td>{props.communityId}</td>
                 <td>
                     <span>{communityDescription}</span>
-                    <span className={'text-secondary'}> <em>({`${props.docs.filter(res=>!!res).length} members`})</em></span>
+                    <span className={'text-secondary'}> <em>({`${props.docs.filter(res=>!!res).length} member${props.docs.filter(res=>!!res).length === 1 ? '' : 's'}`})</em></span>
                 </td>
                 {props.showAverageOn && props.headers.includes(props.showAverageOn) &&
                 <td>

@@ -68,6 +68,10 @@ export class Jobs extends React.Component<IHomeProps> {
         this.props.getMoreResults(analysis, this.props.uuid, nextPage);
     }
 
+    getHierarchicalResults(level, communityId) {
+        this.props.getResults("Community Detection", this.props.uuid, 1, level, communityId);
+    }
+
     onChangeInput(e) {
         const jobId = e.target.value;
         this.setState({
@@ -76,7 +80,8 @@ export class Jobs extends React.Component<IHomeProps> {
     }
 
     render() {
-
+console.warn(this.state);
+console.warn(this.props);
         return (
             <Container fluid>
                 <Row>
@@ -156,6 +161,7 @@ export class Jobs extends React.Component<IHomeProps> {
                                     analysisId={this.props.uuid}
                                     loadMore={this.loadMoreResults.bind(this)}
                                     rerun={this.execute.bind(this)}
+                                    getHierarchicalResults={this.getHierarchicalResults.bind(this)}
                                 />
                             </Card>
                             }

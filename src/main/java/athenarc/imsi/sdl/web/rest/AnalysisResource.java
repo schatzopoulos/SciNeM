@@ -182,7 +182,7 @@ public class AnalysisResource {
                     .append("step", tokens[2])
                     .append("progress", analysisService.getProgress(analyses, (Integer) logInfo.get("stageNum"), Float.parseFloat(tokens[1])));
 
-                // in case logfile is still empty
+            // in case logfile is still empty
             } else {
                 response.append("stage", "HIN Transformation")
                     .append("step", "Initializing")

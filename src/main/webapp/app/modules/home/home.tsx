@@ -16,7 +16,6 @@ import {
 } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IRootState } from 'app/shared/reducers';
-import { generateGroupsOfDisjunctions, constraintsSummary } from 'app/shared/util/constraint-utils';
 import CytoscapeComponent from 'react-cytoscapejs';
 import _ from 'lodash';
 import { analysisRun, getMoreResults, getResults, getStatus} from '../analysis/analysis.reducer';
@@ -28,6 +27,7 @@ import AutocompleteInput from '../datasets/autocomplete-input';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 import ConfigurationModal from './configurationModal';
 import { metapathToString } from '../../shared/util/metapath-utils';
+import { throws } from 'assert';
 
 export interface IHomeProps extends StateProps, DispatchProps {
     loading: boolean;
@@ -599,6 +599,10 @@ export class Home extends React.Component<IHomeProps> {
         this.props.getMoreResults(analysis, this.props.uuid, nextPage);
     }
 
+    getHierarchicalResults(level, communityId) {
+        this.props.getResults("Community Detection", this.props.uuid, 1, level, communityId);
+    }
+
     handleAnalysisDropdown(e) {
         this.setState({
             analysis: e.target.value,
@@ -1105,6 +1109,7 @@ export class Home extends React.Component<IHomeProps> {
                                     (this.props.loading) && 
                                         <Progress animated color="info" value={this.props.progress}>{this.props.progressMsg}</Progress>
                                 }
+
                                 <ResultsPanel
                                     uuid={this.props.uuid}
                                     description={this.props.description}
@@ -1112,6 +1117,7 @@ export class Home extends React.Component<IHomeProps> {
                                     analysis={this.props.analysis}
                                     analysisId={this.props.uuid}
                                     loadMore={this.loadMoreResults.bind(this)}
+                                    getHierarchicalResults={this.getHierarchicalResults.bind(this)}
                                     rerun={this.execute.bind(this)}
                                 />
                             </Card>
