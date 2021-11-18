@@ -36,34 +36,38 @@ public class AnalysisService {
 
     private final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
-    public void submit(String id, ArrayList<String> analyses, List<Document> queries, String primaryEntity, int searchK, int t, int targetId, String dataset,
+    public String prepareJobFiles(String id, ArrayList<String> analyses, List<Document> queries, String primaryEntity, int searchK, int t, int targetId, String dataset,
                        String selectField, int edgesThreshold, double prAlpha, double prTol, int simMinValues,
                        String commAlgorithm, double commThreshold, int commStopCriterion, int commMaxSteps, int commNumOfCommunities, double commRatio) throws java.io.IOException, InterruptedException {
 
         // create folder to store results
         String outputDir = FileUtil.createDir(id);
         String hdfsOutputDir = Constants.HDFS_BASE_PATH + "/" + id;
-        String outputLog = FileUtil.getLogfile(id);
 
         String config = FileUtil.writeConfig(analyses, outputDir, hdfsOutputDir, queries, primaryEntity, searchK, t,
                 targetId, dataset, selectField, edgesThreshold, prAlpha, prTol, simMinValues, commAlgorithm, commThreshold, commStopCriterion, commMaxSteps, commNumOfCommunities, commRatio);
 
         // create log files
-        File out = new File(outputLog);
-        File err = new File(FileUtil.getErrorLog(id));
+        File out = new File(FileUtil.getLogfile(id));
+        out.createNewFile();
 
-        // submit async job
-        this.submitJob(id, config, out, err);
+        File err = new File(FileUtil.getErrorLog(id));
+        err.createNewFile();
+
+        return config;
     }
 
     @Async
-    public void submitJob(String id, String config, File out, File err)
+    public void submitJob(String id, String config)
                         throws java.io.IOException, InterruptedException {
 
         ProcessBuilder pb = new ProcessBuilder();
         pb.command("/bin/bash", Constants.WORKFLOW_DIR + "analysis/analysis.sh", config);
 
-        // redirect ouput to logfile
+        // redirect ouput to logfiles
+        File out = new File(FileUtil.getLogfile(id));
+        File err = new File(FileUtil.getErrorLog(id));
+
         pb.redirectOutput(out);
         pb.redirectError(err);
 
