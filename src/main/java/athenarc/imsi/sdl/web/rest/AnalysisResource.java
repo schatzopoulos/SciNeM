@@ -92,7 +92,7 @@ public class AnalysisResource {
                 queries.add(doc);
             }
 
-            analysisService.submit(
+            String configPath = analysisService.prepareJobFiles(
                 id,
                 config.getAnalysis(),
                 queries,
@@ -113,6 +113,9 @@ public class AnalysisResource {
                 config.getCommNumOfCommunities(),
                 config.getCommRatio()
             );
+
+            // submit async job
+            analysisService.submitJob(id, configPath);
 
         } catch (java.io.IOException | InterruptedException e) {
             throw new RuntimeException("Error running ranking task: " + id);
