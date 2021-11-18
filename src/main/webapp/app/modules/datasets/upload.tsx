@@ -48,7 +48,7 @@ export class Upload extends React.Component<IUploadProps> {
 	render() {
 
 		return (
-			<Container fluid>
+			<Container>
 			    <Row>
 				    <Col md="12">
 				    	<h4>Upload Dataset</h4>
@@ -105,10 +105,10 @@ export class Upload extends React.Component<IUploadProps> {
 						</Col>
 					</Row>
 				}
-<hr/>
+				<hr/>
 				<h4>Upload File Format</h4>
 				Uploading a HIN requires a single compressed (zip) file containing the following files:
-				<ul>
+				<ul className="upload-list">
 					<li>
 						<h5>Schema file</h5>
 						A schema file that describes the entity types and the relationships between them.
@@ -116,37 +116,41 @@ export class Upload extends React.Component<IUploadProps> {
 					</li>
 					<li>
 						<h5>Node attribute files</h5>
-						These files should be placed inside a folder called <code>nodes</code>
-						They are tab-separated files containing all node attributes. 
+						These files should be placed inside a folder called <code>nodes</code>;
+						they are tab-separated files containing all node attributes. 
 						The first line is the header that contains all attribute names. 
 						The first column is an incremental integer identifier starting from 0, denoted as <code>id</code> in the header. 
 						Node attribute files should be named with the first letter of the entity they are representing. 
 						For example, the file that contains the attributes for node type <code>Author</code> should be named <code>A.csv</code>. 
 						Below is an example of a file containing node attributes:<br/>				
-						<code>
-						id	name    surname<br/>
-						0	Makoto  Satoh<br/>
-						1	Ryo Muramatsu<br/>
-						...<br/>
-						</code>
-						
+						<pre>
+							<code className="codeblock">
+								id	name    surname<br/>
+								0	Makoto  Satoh<br/>
+								1	Ryo Muramatsu<br/>
+							...
+							</code>
+						</pre>
 					</li>
 					<li>
 						<h5>Relation files</h5>
-						These files should be placed inside a folder called <code>relations</code>
+						These files should be placed inside a folder called <code>relations</code>.
 						They are tab-separated files needed to construct the relations among nodes. 
-						These files (with <code>csv</code> file extension) contain two columns, the source and target numeric identidiers respectively.
-						They do not contain a header and they should be named according to the source and target node types. 
+						These are <code>csv</code> files that contain two columns, the source and target numeric identidiers, denoted by <code>src</code> and <code>dst</code> headers.
+						They should be named according to the source and target node types. 
 						For example, the file with the relations between node types <code>Author</code> and <code>Paper</code> should be named <code>AP.csv</code>. 
 						Below are the first lines of a file containing relations:<br/>
-						<code>
-						0	1<br/>
-						0	2<br/>
-						0	3<br/>
-						0	5<br/>
-						1	0<br/>
-						...<br/>
-						</code>
+						<pre>
+							<code>
+								src	dst<br/>
+								0	1<br/>
+								0	2<br/>
+								0	3<br/>
+								0	5<br/>
+								1	0<br/>
+								...<br/>
+							</code>
+						</pre>
 					</li>
 				</ul>
 

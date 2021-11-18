@@ -78,7 +78,7 @@ export class Jobs extends React.Component<IHomeProps> {
     render() {
 
         return (
-            <Container fluid>
+            <Container>
                 <Row>
                     <Col md="6">
                         <Row>
