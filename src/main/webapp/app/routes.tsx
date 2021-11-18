@@ -11,6 +11,7 @@ import Logout from 'app/modules/login/logout';
 import Home from 'app/modules/home/home';
 import Upload from 'app/modules/datasets/upload';
 import Jobs from 'app/modules/analysis/jobs';
+import About from 'app/modules/about/about';
 import Entities from 'app/entities';
 import PrivateRoute from 'app/shared/auth/private-route';
 import ErrorBoundaryRoute from 'app/shared/error/error-boundary-route';
@@ -41,6 +42,7 @@ const Routes = () => (
       <ErrorBoundaryRoute path="/" exact component={Home} />
       <ErrorBoundaryRoute path="/upload" exact component={Upload} />
       <ErrorBoundaryRoute path="/jobs/:jobId?" exact component={Jobs} />
+      <ErrorBoundaryRoute path="/about" exact component={About} />
 
       <PrivateRoute path="/" component={Entities} hasAnyAuthorities={[AUTHORITIES.USER]} />
       <ErrorBoundaryRoute component={PageNotFound} />
