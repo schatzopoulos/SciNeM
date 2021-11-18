@@ -72,9 +72,9 @@ public class AnalysisResource {
             // update predefined metapaths
             for (QueryConfigVM.Query query : config.getQueries()) {
                 analysisService.updatePredifinedMetapaths(
-                    config.getDataset(), 
-                    query.getMetapath(), 
-                    config.getSelectField(), 
+                    config.getDataset(),
+                    query.getMetapath(),
+                    config.getSelectField(),
                     query.getEntities()
                 );
             }
@@ -92,7 +92,6 @@ public class AnalysisResource {
                 queries.add(doc);
             }
 
-            // run async method from service
             analysisService.submit(
                 id,
                 config.getAnalysis(),

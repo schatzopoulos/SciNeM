@@ -36,7 +36,6 @@ public class AnalysisService {
 
     private final Logger log = LoggerFactory.getLogger(AnalysisService.class);
 
-    @Async
     public void submit(String id, ArrayList<String> analyses, List<Document> queries, String primaryEntity, int searchK, int t, int targetId, String dataset,
                        String selectField, int edgesThreshold, double prAlpha, double prTol, int simMinValues,
                        String commAlgorithm, double commThreshold, int commStopCriterion, int commMaxSteps, int commNumOfCommunities, double commRatio) throws java.io.IOException, InterruptedException {
@@ -49,13 +48,22 @@ public class AnalysisService {
         String config = FileUtil.writeConfig(analyses, outputDir, hdfsOutputDir, queries, primaryEntity, searchK, t,
                 targetId, dataset, selectField, edgesThreshold, prAlpha, prTol, simMinValues, commAlgorithm, commThreshold, commStopCriterion, commMaxSteps, commNumOfCommunities, commRatio);
 
+        // create log files
+        File out = new File(outputLog);
+        File err = new File(FileUtil.getErrorLog(id));
+
+        // submit async job
+        this.submitJob(id, config, out, err);
+    }
+
+    @Async
+    public void submitJob(String id, String config, File out, File err)
+                        throws java.io.IOException, InterruptedException {
+
         ProcessBuilder pb = new ProcessBuilder();
         pb.command("/bin/bash", Constants.WORKFLOW_DIR + "analysis/analysis.sh", config);
 
         // redirect ouput to logfile
-        File out = new File(outputLog);
-        File err = new File(FileUtil.getErrorLog(id));
-        
         pb.redirectOutput(out);
         pb.redirectError(err);
 
@@ -64,7 +72,7 @@ public class AnalysisService {
         int exitCode = process.waitFor();
 
         // write to file that the job has finished
-        FileWriter fileWriter = new FileWriter(outputLog, true);
+        FileWriter fileWriter = new FileWriter(out, true);
         PrintWriter printWriter = new PrintWriter(fileWriter);
         printWriter.print("Exit Code\t" + exitCode);
         printWriter.close();
@@ -215,8 +223,8 @@ public class AnalysisService {
             newMetapath.setDescription("");
             newMetapath.setTimesUsed(1);
             newMetapath.setShowit(false);
-            predefinedMetapathRepository.save(newMetapath);    
+            predefinedMetapathRepository.save(newMetapath);
         }
     }
-    
+
 }
