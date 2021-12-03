@@ -211,8 +211,7 @@ public class AnalysisResource {
         @ApiParam(value = "The ID that was assigned on the analysis in question, during submission", required = true) @RequestParam String id,
         @ApiParam(value = "The type of the analysis", required = true) @RequestParam String analysis,
         @ApiParam(value = "A value N greater or equal to 1 that is used to retrieve the [(N-1)*50,N*50) results") @RequestParam(required = false, defaultValue = "1") Integer page, 
-        @ApiParam(value = "Applies hierarchical results: indicates the hierarchy level") @RequestParam(required = false, defaultValue = "1") Integer level, 
-        @ApiParam(value = "Applies hierarchical results: indicates the community for which its members are requested") @RequestParam(required = false) Integer communityId
+        @ApiParam(value = "Applies hierarchical results: indicates the community for which its members are requested") @RequestParam(required = false) String communityId
     ) {
         log.debug("analysis/get : {}", id, analysis, page);
 
@@ -242,25 +241,24 @@ public class AnalysisResource {
 
                 Document meta = new Document();
                 List<Document> docs;
-                if (analysis.equals("Community Detection")) {
+                if (analysis.startsWith("Community Detection")) {
                     String communityAlgorithm = (String) configuration.get("community_algorithm");
                     String[] headers = FileUtil.getHeaders(resultsFile);
 
                     if (communityAlgorithm.equals("HPIC")) {
-                        docs = analysisService.getHierarchicalCommunityResults(headers, resultsFile, page, level, communityId, meta);
+                        docs = analysisService.getHierarchicalCommunityResults(headers, resultsFile, page, communityId, meta);
                     } else {
                         docs = analysisService.getFlatCommunityResults(headers, resultsFile, page, meta);
                     }
                     
                 } else {
                     docs = analysisService.getResults(resultsFile, page, meta);
-                    if (analysis.contains("Community")) {
-                        String communityDetailsFile = FileUtil.getCommunityDetailsFile(id);
-                        Document communityCounts = analysisService.getCommunityCounts(communityDetailsFile, docs);
-                        meta.append("community_counts", communityCounts);
-                    }
+                    // if (analysis.contains("Community")) {
+                    //     String communityDetailsFile = FileUtil.getCommunityDetailsFile(id);
+                    //     Document communityCounts = analysisService.getCommunityCounts(communityDetailsFile, docs);
+                    //     meta.append("community_counts", communityCounts);
+                    // }
                 }
-
 
                 String selectField = (String) configuration.get("select_field");
                 String dataset = (String) configuration.get("dataset");

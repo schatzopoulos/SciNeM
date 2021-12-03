@@ -599,8 +599,8 @@ export class Home extends React.Component<IHomeProps> {
         this.props.getMoreResults(analysis, this.props.uuid, nextPage);
     }
 
-    getHierarchicalResults(level, communityId) {
-        this.props.getResults("Community Detection", this.props.uuid, 1, level, communityId);
+    getHierarchicalResults(analysis, communityId) {
+        this.props.getResults(analysis, this.props.uuid, 1, communityId);
     }
 
     handleAnalysisDropdown(e) {

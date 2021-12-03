@@ -159,7 +159,7 @@ export const getStatus = id => {
   };
 };
 
-export const getResults = (analysis, id, page = 1, level = undefined, communityId = undefined) => {
+export const getResults = (analysis, id, page = 1, communityId = undefined) => {
   return {
     type: ACTION_TYPES.GET_RESULTS,
     payload: axios.get(`${analysisAPIUrl}/get`, {
@@ -167,7 +167,6 @@ export const getResults = (analysis, id, page = 1, level = undefined, communityI
         id,
         analysis,
         page,
-        level,
         communityId
       }
     })

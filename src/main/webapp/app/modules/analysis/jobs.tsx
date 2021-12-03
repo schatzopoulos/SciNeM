@@ -19,7 +19,7 @@ export interface IHomeProps extends StateProps, DispatchProps {
 
 export class Jobs extends React.Component<IHomeProps> {
     readonly state: any = {
-        jobId: '16fd5763-209d-4583-8f9a-8e62be'
+        jobId: '82906793-7985-4e05-b387-1d8e72344248'
     };
     polling: any;
 
@@ -68,8 +68,8 @@ export class Jobs extends React.Component<IHomeProps> {
         this.props.getMoreResults(analysis, this.props.uuid, nextPage);
     }
 
-    getHierarchicalResults(level, communityId) {
-        this.props.getResults("Community Detection", this.props.uuid, 1, level, communityId);
+    getHierarchicalResults(analysis, communityId) {
+        this.props.getResults(analysis, this.props.uuid, 1, communityId);
     }
 
     onChangeInput(e) {
@@ -80,8 +80,6 @@ export class Jobs extends React.Component<IHomeProps> {
     }
 
     render() {
-console.warn(this.state);
-console.warn(this.props);
         return (
             <Container fluid>
                 <Row>

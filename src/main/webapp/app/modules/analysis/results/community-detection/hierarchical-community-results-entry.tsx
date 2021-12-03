@@ -9,22 +9,21 @@ const HierarchicalCommunityResultsEntry = props => {
     const MAX_COMMUNITY_DESCRIPTION_LENGTH = 64;
     const [focusedSpoilerControl, focusSpoilerControl] = useState(false);
     
-    const isLeaf = props.doc.community === -1; // -1 in community id indicates that we are in leaf level
-
-    
+    const isLeaf = props.doc.community === "leaf" // indicates that we are in leaf level
 
     let entryData; 
     if (isLeaf) {
-        entryData = props.doc.members.map( (member) => {
-            return <tr key={member}>
+        entryData = props.doc.members.map( (member, index) => {
+
+            return <tr key={index}>
                 <td></td>
                 <td>-</td>
                 <td>
-                    <span>{ member }</span>
+                    <span>{ member.name }</span>
                 </td>
                 {props.showAverageOn && props.headers.includes(props.showAverageOn) &&
                 <td>
-
+                    { member["Ranking Score"] }
                 </td>
                 }
                 <td>
@@ -33,6 +32,7 @@ const HierarchicalCommunityResultsEntry = props => {
         });
     } else {
         const communityDescription = _.chain(props.doc.members)
+        .map(e => e.name)
         .join(", ")
         .truncate({
             length: MAX_COMMUNITY_DESCRIPTION_LENGTH,
@@ -48,26 +48,18 @@ const HierarchicalCommunityResultsEntry = props => {
                 </td>
                 {props.showAverageOn && props.headers.includes(props.showAverageOn) &&
                 <td>
+                    {
+                        _.sumBy(props.doc.members, (e) => { return parseFloat(e["Ranking Score"]); }) / props.doc.count
+                    }
                 </td>
                 }
                 <td>
-                    {/* <div 
-                        onClick={
-                            () => {
-                                props.getHierarchicalResults(props.level, props.doc.community);
-                            }
+                    <a href="" onClick={
+                        (e) => {
+                            e.preventDefault();
+                            props.getHierarchicalResults(props.doc.community);
                         }
-                        onMouseEnter={() => focusSpoilerControl(true)}
-                        onMouseLeave={() => focusSpoilerControl(false)}
-                        className={'spoiler-control' + (focusedSpoilerControl ? ' text-info' : '')}
-                    > */}
-                        <a href="" onClick={
-                            (e) => {
-                                e.preventDefault();
-                                props.getHierarchicalResults(props.level, props.doc.community);
-                            }
-                        }><FontAwesomeIcon icon={faLevelDownAlt} title="Level down"/></a>
-                    {/* </div> */}
+                    }><FontAwesomeIcon icon={faLevelDownAlt} title="Level down"/></a>
                 </td>
             </tr>;
     }

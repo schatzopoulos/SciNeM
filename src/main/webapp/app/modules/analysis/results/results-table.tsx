@@ -18,7 +18,7 @@ export interface IResultsTableProps {
     innerTable?: boolean,
     hierarchical?: boolean,
     level?: number,
-
+    
     handleSelectionChange: any,
     getHierarchicalResults?: any,
 }

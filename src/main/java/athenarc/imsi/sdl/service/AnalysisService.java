@@ -88,16 +88,14 @@ public class AnalysisService {
         meta.append("results_type", results_type);
     }
 
-    public List<Document> getHierarchicalCommunityResults(String[] headers, String analysisFile, Integer page, Integer level, Integer communityId, Document meta) throws IOException {
+    public List<Document> getHierarchicalCommunityResults(String[] headers, String analysisFile, Integer page, String communityId, Document meta) throws IOException {
 
-        // find level column index
-        int levelIndex = -1;
-        for (levelIndex = 0; levelIndex < headers.length; levelIndex++) {
-            if (headers[levelIndex].equals(level.toString())) break;
+        // community and selected field index are defined in that order
+        int communityIndex = 0;
+        for (communityIndex = 0; communityIndex < headers.length; communityIndex++) {
+            if (headers[communityIndex].equals("Community")) break;
         }
-
-        // selected column is always the last one
-        int nameIndex = headers.length - 1;
+        // int nameIndex = 1;
 
         Reader reader = Files.newBufferedReader(Paths.get(analysisFile));
         CSVReader csvReader = new CSVReaderBuilder(reader)
@@ -105,8 +103,9 @@ public class AnalysisService {
             .build();
 
         int lineNum = 0;
-        Map<Integer, Document> communities  = new HashMap<>();    
+        Map<String, Document> communities  = new HashMap<>();
         String[] attributes;
+
         while ((attributes = csvReader.readNext()) != null) {
             lineNum++;
 
@@ -114,30 +113,47 @@ public class AnalysisService {
             if (lineNum == 1)
                 continue;
 
-            String levelValue = attributes[levelIndex];
-            if (levelValue.isEmpty())
-                continue;
-            
-            Integer community = (int) Double.parseDouble(levelValue);
+            String[] rowCommunities = attributes[communityIndex].split("-");
+            String community = null;
 
             // communityId is given, therefore we are filtering based on this community in that level
             // and returning its contents one level below
             if (communityId != null) {
-                if (communityId != community)
-                    continue;
-                else 
-                    community = (levelIndex - 1 >= 0) ? (int) Double.parseDouble(attributes[levelIndex - 1]) : -1; // -1 indicates that we are in leaf level
+                for (int i = 0; i<rowCommunities.length; i++) {
+                    
+                    // this does not belong to the given community
+                    if (!communityId.equals(rowCommunities[i]))
+                        continue;
+
+                    // community matches, therefore return communities of one level below
+                    else if (i > 0)
+                        community = rowCommunities[i - 1]; 
+
+                    // we are in a leaf, return all members of community
+                    else {
+                        community = "leaf";
+                    }
+                }
+
+            // if community is not defined return community of the hoghest level
+            } else {
+                community = rowCommunities[rowCommunities.length-1];
+            }
+
+            // row does not match given communityId
+            if (community == null) {
+                continue;
             }
 
             Document doc = null;
 
-            // creat new community
+            // create new community
             if ((doc = communities.get(community)) == null) {
 
                 doc = new Document();
                 doc.put("community", community);
                 doc.put("count", 0);
-                doc.put("members", new ArrayList<String>());
+                doc.put("members", new ArrayList<Document>());
 
                 communities.put(community, doc);
             }
@@ -147,12 +163,16 @@ public class AnalysisService {
 
             // update community members if less that a threshold
             int showMaxMembers = 5;
-            List<String> members = (List<String>)doc.get("members");
+            List<Document> members = (List<Document>)doc.get("members");
 
             // return only first max members in internal nodes
             // when we are reach leaf-levle return all members
-            if (members.size() < showMaxMembers || community == -1) {
-                members.add(attributes[nameIndex]);
+            if (members.size() < showMaxMembers || community.equals("leaf")) {
+                Document newMember = new Document();
+                for (int i = 0; i < attributes.length; i++) {
+                    newMember.append(headers[i], attributes[i]);
+                }
+                members.add(newMember);
                 doc.put("members", members);         
             }
         }
@@ -161,7 +181,6 @@ public class AnalysisService {
         int communitiesCount = communities.size();
         int totalPages = (int) Math.ceil(((double) communitiesCount) / ((double) Constants.PAGE_SIZE));
         AnalysisService.getMeta(meta, communitiesCount, totalPages, page, headers, "hierarchical");
-        meta.append("results_level", (communityId != null) ? level + 1 : level);
         meta.append("community_id", communityId);
         meta.append("community_counts", communitiesCount);
 
@@ -173,10 +192,6 @@ public class AnalysisService {
         List<Long> communityPositions = FileUtil.getCommunityPositions(analysisFile);
         int totalRecords = communityPositions.size();
         int totalPages = (int) Math.ceil(((double) totalRecords) / ((double) Constants.PAGE_SIZE));
-
-System.out.println(totalRecords);
-System.out.print(totalPages);
-
         int firstCommunityIndex = (page - 1) * Constants.PAGE_SIZE;
 
         if (firstCommunityIndex < communityPositions.size()) {
@@ -266,7 +281,6 @@ System.out.print(totalPages);
 
         // get number of entities of each community in the results
         for (Document doc : docs) {
-            System.out.println(doc);
             String entity = (String) doc.get("Community");
 
             int count = (int) counts.get(entity);

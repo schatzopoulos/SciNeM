@@ -30,6 +30,7 @@ import FileSaver from 'file-saver';
 import _ from 'lodash';
 import { Bar } from 'react-chartjs-2';
 import HinGraph from 'app/modules/analysis/results/hin-graph';
+import { threadId } from 'worker_threads';
 
 export interface IResultsPanelProps {
     uuid: any,
@@ -48,7 +49,10 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         selectedEntries: [],
         visualizationModalOpen: '',
         networkModalOpen: '',
-        hierarchyPath: [],
+        hierarchyPath: {
+            'Community Detection': [],
+            'Community Detection - Ranking': [],
+        },
     };
 
     constructor(props) {
@@ -178,13 +182,13 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
         return label;
     }
 
-    getHierarchicalResults(level, communityId) {
+    getHierarchicalResults(communityId) {
         
         const newState = { ... this.state };
 
-        newState.hierarchyPath.push(communityId);
+        newState.hierarchyPath[this.state.activeAnalysis].push(communityId);
         this.setState(newState, () => { 
-            this.props.getHierarchicalResults(level, communityId);
+            this.props.getHierarchicalResults(this.state.activeAnalysis, communityId);
         });
     }
 
@@ -199,7 +203,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
     render() {
         let resultPanel;
         let hierarchical = false;
-        
+
         if (!_.isEmpty(this.props.results)) {
 
             const result = this.props.results[this.state.activeAnalysis];
@@ -216,7 +220,7 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                 let showRank = false;
                 let groupedDocs = null;
 
-                hierarchical = this.state.activeAnalysis === "Community Detection" 
+                hierarchical = this.state.activeAnalysis.startsWith("Community Detection")
                                         && (result.meta.results_type === "hierarchical");
 
                 switch (this.state.activeAnalysis) {
@@ -254,13 +258,23 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                         break;
                     case 'Community Detection - Ranking':
                         showRank = true;
-                        groupedDocs = _.groupBy(result.docs, doc => doc.Community);
-                        plotData = _.map(_.keys(groupedDocs), communityId => {
-                            const groupData = groupedDocs[communityId];
 
-                            const sumOfGroupRankingScores = _.reduce(groupData, (sum, current) => sum + Number.parseFloat(current['Ranking Score']), 0);
-                            return ['Community ' + communityId, sumOfGroupRankingScores / groupData.length];
-                        });
+                        if (hierarchical) {
+                            plotData = result.docs.map (e => {
+                                return [
+                                    "Community " + e["community"],
+                                    _.sumBy(e.members, (e2) => { return parseFloat(e2["Ranking Score"]); }) / e.count
+                                ]
+                            });
+                        } else {
+                            groupedDocs = _.groupBy(result.docs, doc => doc.Community);
+                            plotData = _.map(_.keys(groupedDocs), communityId => {
+                                const groupData = groupedDocs[communityId];
+
+                                const sumOfGroupRankingScores = _.reduce(groupData, (sum, current) => sum + Number.parseFloat(current['Ranking Score']), 0);
+                                return ['Community ' + communityId, sumOfGroupRankingScores / groupData.length];
+                            });
+                        }
                         plotData = plotData.sort((docA, docB) => {
                             return docB[1] - docA[1];
                         });
@@ -351,22 +365,27 @@ export class ResultsPanel extends React.Component<IResultsPanelProps> {
                                                             <Breadcrumb tag="nav" listTag="div" className="small-grey">
                                                                 <BreadcrumbItem tag="a" href="#" onClick={(e) => { 
                                                                         e.preventDefault();
-                                                                        this.props.getHierarchicalResults(1, null); 
-                                                                        this.setState({ hierarchyPath: [] });
+                                                                        this.props.getHierarchicalResults(this.state.activeAnalysis, null); 
+
+                                                                        const newState = { ... this.state };
+                                                                        newState['hierarchyPath'][this.state.activeAnalysis] = [];
+                                                                        this.setState(newState);
                                                                     }}>root
                                                                 </BreadcrumbItem>       
                                                                 {
-                                                                    this.state.hierarchyPath.map( (communityId, index) => {
+                                                                    this.state.hierarchyPath[this.state.activeAnalysis].map( (communityId, index) => {
                                                                         
-                                                                        const isActive = (index === this.state.hierarchyPath.length-1);
+                                                                        const isActive = (index === this.state.hierarchyPath[this.state.activeAnalysis].length-1);
 
                                                                         return <BreadcrumbItem key={index} tag={ (isActive) ? 'span' : 'a'} href="#" active={ isActive } onClick={(e) => { 
                                                                             e.preventDefault();
-                                                                            this.props.getHierarchicalResults(index + 1, communityId);
-                                                                            this.setState({ hierarchyPath: [...this.state.hierarchyPath].slice(0, index+1) });
+                                                                            this.props.getHierarchicalResults(this.state.activeAnalysis, communityId);
+                                                                            const newState = { ... this.state };
+                                                                            newState['hierarchyPath'][this.state.activeAnalysis] = newState['hierarchyPath'][this.state.activeAnalysis].slice(0, index+1)
+                                                                            this.setState(newState);
                                                                         }}
-                                                                        title={`Hierachy level: ${index + 1}, Community: ${communityId}`}>
-                                                                            <FontAwesomeIcon icon={faLayerGroup} /> {index + 1} <FontAwesomeIcon icon={faUserFriends}/> {communityId}
+                                                                        title={`Community: ${communityId}`}>
+                                                                            {communityId}
                                                                         </BreadcrumbItem>;
                                                                     })
                                                                 }
