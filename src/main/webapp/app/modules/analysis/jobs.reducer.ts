@@ -159,13 +159,15 @@ export const getStatus = id => {
   };
 };
 
-export const getResults = (analysis, id) => {
+export const getResults = (analysis, id, page = 1, communityId = undefined) => {
   return {
     type: ACTION_TYPES.GET_RESULTS,
     payload: axios.get(`${analysisAPIUrl}/get`, {
       params: {
         id,
-        analysis
+        analysis,
+        page,
+        communityId
       }
     })
   };

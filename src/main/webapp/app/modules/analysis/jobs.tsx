@@ -19,7 +19,7 @@ export interface IHomeProps extends StateProps, DispatchProps {
 
 export class Jobs extends React.Component<IHomeProps> {
     readonly state: any = {
-        jobId: ''
+        jobId: '82906793-7985-4e05-b387-1d8e72344248'
     };
     polling: any;
 
@@ -68,6 +68,10 @@ export class Jobs extends React.Component<IHomeProps> {
         this.props.getMoreResults(analysis, this.props.uuid, nextPage);
     }
 
+    getHierarchicalResults(analysis, communityId) {
+        this.props.getResults(analysis, this.props.uuid, 1, communityId);
+    }
+
     onChangeInput(e) {
         const jobId = e.target.value;
         this.setState({
@@ -76,7 +80,6 @@ export class Jobs extends React.Component<IHomeProps> {
     }
 
     render() {
-
         return (
             <Container>
                 <Row>
@@ -156,6 +159,7 @@ export class Jobs extends React.Component<IHomeProps> {
                                     analysisId={this.props.uuid}
                                     loadMore={this.loadMoreResults.bind(this)}
                                     rerun={this.execute.bind(this)}
+                                    getHierarchicalResults={this.getHierarchicalResults.bind(this)}
                                 />
                             </Card>
                             }
