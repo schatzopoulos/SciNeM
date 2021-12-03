@@ -184,7 +184,7 @@ public class AnalysisResource {
                     .append("step", tokens[2])
                     .append("progress", analysisService.getProgress(analyses, (Integer) logInfo.get("stageNum"), Float.parseFloat(tokens[1])));
 
-                // in case logfile is still empty
+            // in case logfile is still empty
             } else {
                 response.append("stage", "HIN Transformation")
                     .append("step", "Initializing")
@@ -212,8 +212,10 @@ public class AnalysisResource {
     public Document get(
         @ApiParam(value = "The ID that was assigned on the analysis in question, during submission", required = true) @RequestParam String id,
         @ApiParam(value = "The type of the analysis", required = true) @RequestParam String analysis,
-        @ApiParam(value = "A value N greater or equal to 1 that is used to retrieve the [(N-1)*50,N*50) results") @RequestParam(required = false) Integer page) {
-        log.debug("analysis/get : {}", id, page);
+        @ApiParam(value = "A value N greater or equal to 1 that is used to retrieve the [(N-1)*50,N*50) results") @RequestParam(required = false, defaultValue = "1") Integer page, 
+        @ApiParam(value = "Applies hierarchical results: indicates the community for which its members are requested") @RequestParam(required = false) String communityId
+    ) {
+        log.debug("analysis/get : {}", id, analysis, page);
 
         String logfile = FileUtil.getLogfile(id);
 
@@ -236,21 +238,30 @@ public class AnalysisResource {
             String resultsFile = FileUtil.getOutputFile(id, analysis);
 
             try {
-                Document meta = new Document();
-                List<Document> docs;
-                if (analysis.equals("Community Detection") || analysis.equals("Community Detection - Ranking")) {
-                    docs = analysisService.getCommunityResults(resultsFile, page, meta);
-                } else {
-                    docs = analysisService.getResults(resultsFile, page, meta);
-                    if (analysis.contains("Community")) {
-                        String communityDetailsFile = FileUtil.getCommunityDetailsFile(id);
-                        Document communityCounts = analysisService.getCommunityCounts(communityDetailsFile, docs);
-                        meta.append("community_counts", communityCounts);
-                    }
-                }
-
                 String configurationFilePath = FileUtil.getConfFile(id);
                 Document configuration = Document.parse(FileUtil.readJsonFile(configurationFilePath));
+
+                Document meta = new Document();
+                List<Document> docs;
+                if (analysis.startsWith("Community Detection")) {
+                    String communityAlgorithm = (String) configuration.get("community_algorithm");
+                    String[] headers = FileUtil.getHeaders(resultsFile);
+
+                    if (communityAlgorithm.equals("HPIC")) {
+                        docs = analysisService.getHierarchicalCommunityResults(headers, resultsFile, page, communityId, meta);
+                    } else {
+                        docs = analysisService.getFlatCommunityResults(headers, resultsFile, page, meta);
+                    }
+                    
+                } else {
+                    docs = analysisService.getResults(resultsFile, page, meta);
+                    // if (analysis.contains("Community")) {
+                    //     String communityDetailsFile = FileUtil.getCommunityDetailsFile(id);
+                    //     Document communityCounts = analysisService.getCommunityCounts(communityDetailsFile, docs);
+                    //     meta.append("community_counts", communityCounts);
+                    // }
+                }
+
                 String selectField = (String) configuration.get("select_field");
                 String dataset = (String) configuration.get("dataset");
                 String primaryEntiry = (String) configuration.get("primary_entity");

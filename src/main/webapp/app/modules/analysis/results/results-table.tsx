@@ -1,10 +1,11 @@
-import './ranking-results.scss';
+import './results.scss';
 
 import React, { useRef } from 'react';
 import _ from 'lodash';
 import { Table } from 'reactstrap';
-import ResultEntry from './result-entry';
-import CommunityResultsEntry from 'app/modules/analysis/results/community-results-entry';
+import ResultEntry from './ranking/result-entry';
+import CommunityResultsEntry from 'app/modules/analysis/results/community-detection/community-results-entry';
+import HierarchicalCommunityResultsEntry from 'app/modules/analysis/results/community-detection/hierarchical-community-results-entry';
 
 export interface IResultsTableProps {
     docs: any,
@@ -15,8 +16,11 @@ export interface IResultsTableProps {
     showRank: boolean
     aliases?:any,
     innerTable?: boolean,
-
-    handleSelectionChange: any
+    hierarchical?: boolean,
+    level?: number,
+    
+    handleSelectionChange: any,
+    getHierarchicalResults?: any,
 }
 
 export class ResultsTable extends React.Component<IResultsTableProps> {
@@ -74,7 +78,7 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                 },this.props.headers)
                 :rearrangeHeaders(this.props.headers, this.props.selectField);
 
-        // const tableHeaders = this.props.communityView? this.props.headers: rearrangeHeaders(this.props.headers,this.props.selectField);
+        // ranking result entry
         if (!this.props.communityView) {
             rows = this.props.docs.map((row, index) => {
 
@@ -95,24 +99,45 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                     />
                 );
             });
+
+        // community detection entry
         } else {
-            rows = _.map(_.values(_.groupBy(this.props.docs, result => result.Community)), communityGroup => {
-                const communityIndices = _.map(communityGroup, member => member.resultIndex);
-                return (
-                    <CommunityResultsEntry
-                        key={communityGroup[0].Community}
-                        communityId={communityGroup[0].Community}
-                        headers={_.without(this.props.headers, 'Community')}
-                        aliases={this.props.aliases}
-                        docs={communityGroup}
-                        selectField={this.props.selectField}
-                        selectedCommunityMembers={_.intersection(this.props.selections, communityIndices)}
-                        showAverageOn={'Ranking Score'}
-                        showRank={this.props.showRank}
-                        handleToggledCommunityMembers={this.toggleSelected.bind(this)}
-                    />
-                );
-            });
+            if (this.props.hierarchical) {
+                rows = this.props.docs.map( doc => {
+                    return (
+                        <HierarchicalCommunityResultsEntry
+                            key={doc.community}
+                            doc={doc}
+                            level={this.props.level}
+                            headers={_.without(this.props.headers, 'Community')}
+                            aliases={this.props.aliases}
+                            selectField={this.props.selectField}
+                            showAverageOn={'Ranking Score'}
+                            showRank={this.props.showRank}
+                            handleToggledCommunityMembers={this.toggleSelected.bind(this)}
+                            getHierarchicalResults={this.props.getHierarchicalResults}
+                        />
+                    );
+                });
+            } else {
+                rows = _.map(_.values(_.groupBy(this.props.docs, result => result.Community)), communityGroup => {
+                    const communityIndices = _.map(communityGroup, member => member.resultIndex);
+                    return (
+                        <CommunityResultsEntry
+                            key={communityGroup[0].Community}
+                            communityId={communityGroup[0].Community}
+                            headers={_.without(this.props.headers, 'Community')}
+                            aliases={this.props.aliases}
+                            docs={communityGroup}
+                            selectField={this.props.selectField}
+                            selectedCommunityMembers={_.intersection(this.props.selections, communityIndices)}
+                            showAverageOn={'Ranking Score'}
+                            showRank={this.props.showRank}
+                            handleToggledCommunityMembers={this.toggleSelected.bind(this)}
+                        />
+                    );
+                });
+            }
         }
 
         return (
@@ -120,21 +145,21 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                 <thead>
                 <tr className={(!this.props.innerTable && (this.props.selections.length === this.props.docs.length)) ? 'bg-info' : ''}>
                     <th>
-                        {!this.props.innerTable &&
-                        <div className={'form-check form-check-inline'}>
-                            <input
-                                type={'checkbox'}
-                                id={'results-table'}
-                                onChange={this.handleMasterSelectionChange.bind(this)}
-                                checked={this.props.selections.length === this.props.docs.length}
-                                ref={this.tableCheckboxRef}
-                                className={'form-check-input'} />
-                            <label className={'form-check-label'}
-                                   htmlFor={'results-table'}>{(!this.props.communityView && this.props.showRank)? 'Rank' : ''}</label>
-                        </div>
+                        { (!this.props.innerTable && !this.props.hierarchical) &&
+                            <div className={'form-check form-check-inline'}>
+                                <input
+                                    type={'checkbox'}
+                                    id={'results-table'}
+                                    onChange={this.handleMasterSelectionChange.bind(this)}
+                                    checked={this.props.selections.length === this.props.docs.length}
+                                    ref={this.tableCheckboxRef}
+                                    className={'form-check-input'} />
+                                <label className={'form-check-label'}
+                                    htmlFor={'results-table'}>{(!this.props.communityView && this.props.showRank)? 'Rank' : ''}</label>
+                            </div>
                         }
                         {this.props.innerTable && this.props.showRank &&
-                        <span>Rank</span>
+                            <span>Rank</span>
                         }
                     </th>
                     {
@@ -143,13 +168,12 @@ export class ResultsTable extends React.Component<IResultsTableProps> {
                         })
                     }
                     {
-                        this.props.communityView &&
-                        <th></th>
+                        this.props.communityView && <th></th>
                     }
                 </tr>
                 </thead>
                 <tbody>
-                {rows}
+                    { rows }
                 </tbody>
             </Table>
         );
