@@ -88,19 +88,6 @@ public class AnalysisService {
         meta.append("results_type", results_type);
     }
 
-    public List<Document> getCommunityResults(String analysisFile, Integer page, Integer level, Integer communityId, Document meta) throws IOException {
-
-        String[] headers = FileUtil.getHeaders(analysisFile);
-        
-        // get HPIC results
-        if (headers.length > 2) {
-             return this.getHierarchicalCommunityResults(headers, analysisFile, page, level, communityId, meta);
-        } 
-
-        // results from other community detection algorithms
-        return this.getFlatCommunityResults(headers, analysisFile, page, meta);
-    }
-
     public List<Document> getHierarchicalCommunityResults(String[] headers, String analysisFile, Integer page, Integer level, Integer communityId, Document meta) throws IOException {
 
         // find level column index
@@ -186,6 +173,9 @@ public class AnalysisService {
         List<Long> communityPositions = FileUtil.getCommunityPositions(analysisFile);
         int totalRecords = communityPositions.size();
         int totalPages = (int) Math.ceil(((double) totalRecords) / ((double) Constants.PAGE_SIZE));
+
+System.out.println(totalRecords);
+System.out.print(totalPages);
 
         int firstCommunityIndex = (page - 1) * Constants.PAGE_SIZE;
 

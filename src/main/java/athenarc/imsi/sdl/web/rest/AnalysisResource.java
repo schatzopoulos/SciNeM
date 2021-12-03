@@ -237,10 +237,21 @@ public class AnalysisResource {
             String resultsFile = FileUtil.getOutputFile(id, analysis);
 
             try {
+                String configurationFilePath = FileUtil.getConfFile(id);
+                Document configuration = Document.parse(FileUtil.readJsonFile(configurationFilePath));
+
                 Document meta = new Document();
                 List<Document> docs;
-                if (analysis.equals("Community Detection") || analysis.equals("Community Detection - Ranking")) {
-                    docs = analysisService.getCommunityResults(resultsFile, page, level, communityId, meta);
+                if (analysis.equals("Community Detection")) {
+                    String communityAlgorithm = (String) configuration.get("community_algorithm");
+                    String[] headers = FileUtil.getHeaders(resultsFile);
+
+                    if (communityAlgorithm.equals("HPIC")) {
+                        docs = analysisService.getHierarchicalCommunityResults(headers, resultsFile, page, level, communityId, meta);
+                    } else {
+                        docs = analysisService.getFlatCommunityResults(headers, resultsFile, page, meta);
+                    }
+                    
                 } else {
                     docs = analysisService.getResults(resultsFile, page, meta);
                     if (analysis.contains("Community")) {
@@ -250,8 +261,7 @@ public class AnalysisResource {
                     }
                 }
 
-                String configurationFilePath = FileUtil.getConfFile(id);
-                Document configuration = Document.parse(FileUtil.readJsonFile(configurationFilePath));
+
                 String selectField = (String) configuration.get("select_field");
                 String dataset = (String) configuration.get("dataset");
                 String primaryEntiry = (String) configuration.get("primary_entity");

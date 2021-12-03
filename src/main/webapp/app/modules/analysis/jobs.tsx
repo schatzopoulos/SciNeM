@@ -19,7 +19,7 @@ export interface IHomeProps extends StateProps, DispatchProps {
 
 export class Jobs extends React.Component<IHomeProps> {
     readonly state: any = {
-        jobId: ''
+        jobId: '16fd5763-209d-4583-8f9a-8e62be'
     };
     polling: any;
 
