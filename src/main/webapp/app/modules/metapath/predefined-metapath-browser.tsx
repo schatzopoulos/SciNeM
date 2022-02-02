@@ -12,7 +12,7 @@ import { getPredefinedMetapaths } from 'app/modules/metapath/metapath.reducer';
 
 const PredefinedMetapathBrowser = props => {
     const predefinedMetapathsComponents = props.predefinedMetapaths
-        ? props.predefinedMetapaths.sort((pm0,pm1)=>pm0.stats.rank-pm1.stats.rank).map(
+        ? props.predefinedMetapaths.sort((pm0,pm1)=>pm0.timesUsed-pm1.timesUsed).map(
             predefinedMetapathData => {
                 return (
                     <tr key={`metapath-${predefinedMetapathData.metapathAbbreviation}`}>
